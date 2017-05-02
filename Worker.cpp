@@ -83,6 +83,9 @@ void Worker::work() {
                 }
                 allSolutions.push_back(hist);
             }
+
+	    free(contiguousMemoryArray[0]);
+	    free(contiguousMemoryArray);
         } else {
             break;
         }
@@ -103,6 +106,5 @@ void Worker::solveUniqueSolutions() {
     NQueenSolver solver = NQueenSolver();
 
     int i = taskdetails.i;
-
     solver.UniqGB(i, numberOfQueens, allSolutions, solutions, count);
 };

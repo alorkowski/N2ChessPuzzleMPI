@@ -117,35 +117,37 @@ void Master::solveAllSolutions() {
 
 
 void Master::shareAllSolutions() {
-    taskdetails.task = WORK_SHARE;
+    for (proc = 1; proc <= numberOfProcessors; proc++){
+	taskdetails.task = WORK_SHARE;
 
-    MPI_Recv(&msg, 1, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
-    workerid = status.MPI_SOURCE;
+	MPI_Recv(&msg, 1, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
+	workerid = status.MPI_SOURCE;
+	
+	if (msg == WORK_REQUEST){
+	    taskdetails.i = 0;
+	    taskdetails.j = 0;
+	    taskdetails.numberOfSolutions=numberOfSolutions;
+	    MPI_Send(&taskdetails, 1, mpi_taskdetails, workerid, 0, MPI_COMM_WORLD);
+	}
 
-    if (msg == WORK_REQUEST){
-        taskdetails.i = 0;
-        taskdetails.j = 0;
-        taskdetails.numberOfSolutions=numberOfSolutions;
-        MPI_Send(&taskdetails, 1, mpi_taskdetails, workerid, 0, MPI_COMM_WORLD);
+	int** contiguousMemoryArray;
+	contiguousMemoryArray = alloc_2d_int(numberOfSolutions, numberOfQueens);
+	
+	for (int i = 0; i < count; ++i) {
+	    for (int j = 0; j < numberOfQueens; ++j) {
+		contiguousMemoryArray[i][j] = allSolution.at(i).getState().at(j);
+	    }
+	}
+
+	MPI_Send(&(contiguousMemoryArray[0][0]),
+		 numberOfSolutions*numberOfQueens,
+		 MPI_INT,
+		 workerid,
+		 0,
+		 MPI_COMM_WORLD);
+
+	free(contiguousMemoryArray);
     }
-
-    int** contiguousMemoryArray;
-    contiguousMemoryArray = alloc_2d_int(numberOfSolutions, numberOfQueens);
-
-    for (int i = 0; i < count; ++i) {
-        for (int j = 0; j < numberOfQueens; ++j) {
-            contiguousMemoryArray[i][j] = allSolution.at(i).getState().at(j);
-        }
-    }
-
-    MPI_Send(&(contiguousMemoryArray[0][0]),
-             numberOfSolutions*numberOfQueens,
-             MPI_INT,
-             workerid,
-             0,
-             MPI_COMM_WORLD);
-
-    free(contiguousMemoryArray);
 }
 
 

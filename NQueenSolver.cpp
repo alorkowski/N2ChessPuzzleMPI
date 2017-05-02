@@ -114,6 +114,5 @@ void NQueenSolver::UniqGB(int i,
        the solution is unique. */
     umat.push_back(mat.at(i));
     count++;
-    return;
 }
 
