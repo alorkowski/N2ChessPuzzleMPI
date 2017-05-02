@@ -61,7 +61,6 @@ private:
     MPI_Datatype mpi_taskdetails;
 
     int count;
-    int ucount;
 
     std::vector<Chessboard> allSolution;
     std::vector<Chessboard> uniqueSolution;

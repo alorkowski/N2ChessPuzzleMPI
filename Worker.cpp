@@ -52,11 +52,9 @@ void Worker::work() {
             }
 
             MPI_Send(&(contiguousMemoryArray[0][0]), count * numberOfQueens, MPI_INT, 0, 0, MPI_COMM_WORLD);
+
             free(contiguousMemoryArray[0]);
             free(contiguousMemoryArray);
-
-            count = 0;
-
             continue;
         } else if (task == WORK_SHARE) {
 
@@ -86,6 +84,8 @@ void Worker::work() {
 
 	    free(contiguousMemoryArray[0]);
 	    free(contiguousMemoryArray);
+
+	    count = 0;
         } else {
             break;
         }

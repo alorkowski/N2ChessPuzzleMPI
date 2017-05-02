@@ -122,18 +122,23 @@ void Master::shareAllSolutions() {
 
 	MPI_Recv(&msg, 1, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
 	workerid = status.MPI_SOURCE;
+
+	//double chunk = numberOfSolutions / numberOfProcessors;
+	//int start = ( proc - 1 ) * chunk;
+	//int end = ( proc * chunk ) - 2;
 	
 	if (msg == WORK_REQUEST){
+	    //int subNumberOfSolutions = ( end - start ) + 1;
 	    taskdetails.i = 0;
 	    taskdetails.j = 0;
-	    taskdetails.numberOfSolutions=numberOfSolutions;
+	    taskdetails.numberOfSolutions = numberOfSolutions;
 	    MPI_Send(&taskdetails, 1, mpi_taskdetails, workerid, 0, MPI_COMM_WORLD);
 	}
 
 	int** contiguousMemoryArray;
 	contiguousMemoryArray = alloc_2d_int(numberOfSolutions, numberOfQueens);
 	
-	for (int i = 0; i < count; ++i) {
+	for (int i = 0; i < numberOfSolutions; ++i) {
 	    for (int j = 0; j < numberOfQueens; ++j) {
 		contiguousMemoryArray[i][j] = allSolution.at(i).getState().at(j);
 	    }
@@ -177,6 +182,8 @@ void Master::solveUniqueSolutions() {
         int **partialSolution;
         partialSolution = alloc_2d_int(count, numberOfQueens);
 
+	//std::cout << count << std::endl;
+
         MPI_Recv(&(partialSolution[0][0]), count*numberOfQueens, MPI_INT, proc, 0, MPI_COMM_WORLD, &status);
 
         numberOfUniqueSolutions += count;
@@ -189,6 +196,8 @@ void Master::solveUniqueSolutions() {
             uniqueSolution.push_back(reconstructedChessboard);
         }
 
+	count = 0;
+
         free(partialSolution[0]);
         free(partialSolution);
     }
@@ -200,11 +209,13 @@ void Master::printSolutions() {
     for (int i = 0; i < numberOfSolutions; i++) {
         allSolution.at(i).print();
     }
+    std::cout << std::endl;
     if (uniqueFlag) {
+	std::cout << "Printing unique solutions as arrays" << std::endl;
         for (int i = 0; i < numberOfUniqueSolutions; i++) {
-            std::cout << "Printing unique solutions as arrays" << std::endl;
             uniqueSolution.at(i).print();
         }
+	std::cout << std::endl;
     }
 }
 
