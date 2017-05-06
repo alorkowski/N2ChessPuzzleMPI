@@ -27,6 +27,7 @@ public:
     void solveAllSolutions();
     void shareAllSolutions();
     void solveUniqueSolutions();
+    void solveUniqueSolutionsByBlock();
     void printSolutions();
     void printGameBoard();
     void writeSolutions();

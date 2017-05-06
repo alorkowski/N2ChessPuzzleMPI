@@ -27,13 +27,14 @@ int main(int argc, char **argv) {
         remove("GB-uniq.dat");
     }
 
+    n = 0;
+
     double t = MPI_Wtime();
 
     if (prank == MASTER){
         for(int i = 1; i < argc; i++){
             if (strcmp(argv[i], "-n") == 0){
                 n = atoi( argv[i+1] );
-                if (n == 0){ n = 4; }
                 i++;
             }
             else if (strcmp(argv[i], "-u") == 0){ unique_flag = true; }
@@ -43,14 +44,15 @@ int main(int argc, char **argv) {
             else if (strcmp(argv[i], "-wg") == 0){ writeGB_flag = true; }
             else {}
         }
+        if (n == 0){ n = 4; }
         Master master(n, psize, unique_flag, print_flag, game_flag, write_flag, writeGB_flag);
     }else{
         for(int i = 1; i < argc; i++) {
             if (strcmp(argv[i], "-n") == 0) {
                 n = atoi(argv[i + 1]);
-                if (n == 0) { n = 4; }
             }
         }
+        if (n == 0){ n = 4; }
         Worker worker(n, prank);
     }
 
@@ -60,4 +62,6 @@ int main(int argc, char **argv) {
 
     MPI_Barrier(MPI_COMM_WORLD);
     MPI_Finalize();
+
+    return 0;
 }

@@ -23,6 +23,7 @@ public:
 
     void solveAllSolutions();
     void solveUniqueSolutions();
+    void solveUniqueSolutionsByBlock();
 
     const int WORK_REQUEST = -1;
     const int WORK_COMPLETE = -2;

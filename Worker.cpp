@@ -37,9 +37,14 @@ void Worker::work() {
             continue;
         } else if (task == WORK_UNIQUE) {
             solveUniqueSolutions();
+            //solveUniqueSolutionsByBlock();
             continue;
         } else if (task == WORK_STANDBY) {
             MPI_Send(&count, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
+
+            if (count == 0){
+                continue;
+            }
 
             int **contiguousMemoryArray;
 
@@ -107,4 +112,15 @@ void Worker::solveUniqueSolutions() {
 
     int i = taskdetails.i;
     solver.UniqGB(i, numberOfQueens, allSolutions, solutions, count);
+};
+
+void Worker::solveUniqueSolutionsByBlock() {
+    NQueenSolver solver = NQueenSolver();
+    int i = taskdetails.i;
+    int j = taskdetails.j;
+
+    while( i <= j) {
+        solver.UniqGB(i, numberOfQueens, allSolutions, solutions, count);
+        i++;
+    }
 };
