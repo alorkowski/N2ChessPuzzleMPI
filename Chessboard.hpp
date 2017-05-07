@@ -23,14 +23,13 @@ public:
 	// Return the raw board representation. This is used to set the board.
 	std::vector<int> getState();
 
-    // vector representing the board.
-    std::vector<int> state;
-
 	void print();
 
 	void printGameBoard();
 
 private:
+	// vector representing the board.
+	std::vector<int> state;
 };
 
 #endif	//CHESSBOARD_HPP_
