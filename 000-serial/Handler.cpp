@@ -5,7 +5,6 @@
 #include <cstdlib>
 #include <iostream>
 #include "Handler.hpp"
-#include "NQueenSolver.hpp"
 
 Handler::Handler(int n,
                  bool unique_flag,
