@@ -12,7 +12,8 @@
 class NQueenSolver {
 public:
 
-    void solve(int i,
+    void solve(int rootColumn,
+               int rootValue,
                int numberOfQueens,
                int col,
                Chessboard &hist,

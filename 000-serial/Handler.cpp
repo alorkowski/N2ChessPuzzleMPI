@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <iostream>
 #include "Handler.hpp"
+#include "NQueenSolver.hpp"
 
 Handler::Handler(int n,
                  bool unique_flag,
@@ -46,16 +47,9 @@ void Handler::solveAllSolutions() {
     Chessboard chessboard(numberOfQueens);
     NQueenSolver solver = NQueenSolver();
     for (int i = 0; i < numberOfQueens; i++) {
-        for (int j = 0; j < numberOfQueens; j++) {
-            if (!subcheck(i, j)){
-                chessboard.setState(0, i);
-                chessboard.setState(1, j);
-                int col = 2;
-                solver.solve(j, numberOfQueens, col, chessboard, allSolution, numberOfSolutions);
-            } else {
-                continue;
-            }
-        }
+        chessboard.setState(0, i);
+        int col = 1;
+        solver.solve(col - 1, i, numberOfQueens, col, chessboard, allSolution, numberOfSolutions);
     }
 }
 

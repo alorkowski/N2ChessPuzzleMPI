@@ -2,7 +2,6 @@
 #define HANDLER_HPP_
 
 #include "Chessboard.hpp"
-#include "NQueenSolver.hpp"
 
 class Handler {
 public:

@@ -3,7 +3,8 @@
 
 #define conflict(i, j, col) (hist.getState().at(j) == i || abs(hist.getState().at(j) - i) == col - j)
 
-void NQueenSolver::solve(int i,
+void NQueenSolver::solve(int rootColumn,
+                         int rootValue,
                          int numberOfQueens,
                          int col,
                          Chessboard &hist,
@@ -25,10 +26,10 @@ void NQueenSolver::solve(int i,
             continue;
         }
         hist.setState(col,k);
-        if ( hist.getState().at(1) != i ){
+        if ( hist.getState().at(rootColumn) != rootValue ){
             return;
         }
-        solve(i, numberOfQueens, col + 1, hist, solutions, count);
+        solve(rootColumn, rootValue, numberOfQueens, col + 1, hist, solutions, count);
     }
 }
 

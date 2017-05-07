@@ -69,20 +69,34 @@ bool Master::subcheck(int i, int j) {
 
 void Master::solveAllSolutions() {
     taskdetails.task = WORK_COUNT;
-    for (int i = 0; i < numberOfQueens; i++) {
-        for (int j = 0; j < numberOfQueens; j++) {
-            if (!subcheck(i, j)){
+    int threshold = (numberOfQueens - 1) * (numberOfQueens - 2);
+    if (numberOfProcessors >= threshold) {
+        for (int i = 0; i < numberOfQueens; i++) {
+            for (int j = 0; j < numberOfQueens; j++) {
+                if (!subcheck(i, j)) {
 
-                MPI_Recv(&msg, 1, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
-                workerid = status.MPI_SOURCE;
+                    MPI_Recv(&msg, 1, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
+                    workerid = status.MPI_SOURCE;
 
-                if (msg == WORK_REQUEST){
-                    taskdetails.i = i;
-                    taskdetails.j = j;
-                    MPI_Send(&taskdetails, 1, mpi_taskdetails, workerid, 0, MPI_COMM_WORLD);
+                    if (msg == WORK_REQUEST) {
+                        taskdetails.i = i;
+                        taskdetails.j = j;
+                        MPI_Send(&taskdetails, 1, mpi_taskdetails, workerid, 0, MPI_COMM_WORLD);
+                    }
+                } else {
+                    continue;
                 }
-            }else{
-                continue;
+            }
+        }
+    } else {
+        for (int i = 0; i < numberOfQueens; i++) {
+            MPI_Recv(&msg, 1, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
+            workerid = status.MPI_SOURCE;
+
+            if (msg == WORK_REQUEST) {
+                taskdetails.i = i;
+                taskdetails.j = i;
+                MPI_Send(&taskdetails, 1, mpi_taskdetails, workerid, 0, MPI_COMM_WORLD);
             }
         }
     }
@@ -96,6 +110,10 @@ void Master::solveAllSolutions() {
     for (proc = 1; proc <= numberOfProcessors; proc++){
         MPI_Send(&WORK_STANDBY, 1, MPI_INT, proc, 0, MPI_COMM_WORLD);
         MPI_Recv(&count, 1, MPI_INT, proc, 0, MPI_COMM_WORLD, &status);
+
+        if (count == 0){
+            continue;
+        }
 
         int **partialSolution;
         partialSolution = alloc_2d_int(count, numberOfQueens);

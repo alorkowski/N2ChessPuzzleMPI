@@ -101,10 +101,18 @@ void Worker::solveAllSolutions() {
     Chessboard chessboard(numberOfQueens);
     NQueenSolver solver = NQueenSolver();
 
-    chessboard.setState(0, taskdetails.i);
-    chessboard.setState(1, taskdetails.j);
-    int col = 2;
-    solver.solve(taskdetails.j, numberOfQueens, col, chessboard, solutions, count);
+    int col = 0;
+
+    if (taskdetails.i != taskdetails.j) {
+        chessboard.setState(0, taskdetails.i);
+        chessboard.setState(1, taskdetails.j);
+        col += 2;
+    } else {
+        chessboard.setState(0, taskdetails.i);
+        col += 1;
+    }
+
+    solver.solve(col - 1, taskdetails.j, numberOfQueens, col, chessboard, solutions, count);
 }
 
 void Worker::solveUniqueSolutions() {
