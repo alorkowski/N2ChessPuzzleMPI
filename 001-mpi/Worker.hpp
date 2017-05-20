@@ -1,38 +1,31 @@
-#ifndef MASTER_HPP_
-#define MASTER_HPP_
+//
+// Created by Alexander Lorkowski on 5/1/17.
+//
 
-#include <vector>
-#include <stddef.h>
-#include <stdint.h>
-#include <string>
-#include <stdlib.h>
-#include <cstdlib>
-#include <iostream>
+#ifndef WORKER_HPP_
+#define WORKER_HPP_
+
 #include <mpi.h>
+#include <stddef.h>
+#include <stdlib.h>
+#include <vector>
 #include "Chessboard.hpp"
+#include "NQueenSolver.hpp"
 
-class Master {
+class Worker {
 public:
 
-    Master(int n,
-           int psize,
-           bool unique_flag,
-           bool print_flag,
-           bool game_flag,
-           bool write_flag,
-           bool writeGB_flag);
+    Worker(int n, int pRank);
 
-    virtual ~Master();
+    virtual ~Worker();
+
+    void work();
 
     void solveAllSolutions();
-    void shareAllSolutions();
     void solveUniqueSolutions();
     void solveUniqueSolutionsByBlock();
-    void printSolutions();
-    void printGameBoard();
-    void writeSolutions();
-    void writeGameBoard();
 
+    int count = 0;
 
     const int WORK_REQUEST = -1;
     const int WORK_COMPLETE = -2;
@@ -43,33 +36,23 @@ public:
 
 private:
 
-    int numberOfQueens;
-    int numberOfProcessors;
-    bool uniqueFlag;
-    bool printFlag;
-    bool gameFlag;
-    bool writeFlag;
-    bool writeGBFlag;
+    void sendData();
+    void getData();
 
-    bool subcheck(int i, int j);
+    int numberOfQueens;
 
     MPI_Status status;
-    int        proc;
+    int        proc, task;
     int        workerid, msg;
     int        numberOfSolutions = 0;
     int        numberOfUniqueSolutions = 0;
-
-    MPI_Datatype mpi_taskdetails;
-
-    int count;
-
-    std::vector<Chessboard> allSolution;
-    std::vector<Chessboard> uniqueSolution;
 
     int          nitems = 4;
     int          blocklengths[4] = {1,1,1,1};
     MPI_Datatype types[4] = {MPI_INT, MPI_INT, MPI_INT, MPI_INT};
     MPI_Aint     offsets[4];
+
+    MPI_Datatype mpi_taskdetails;
 
     typedef struct mpiData {
         int task;
@@ -80,8 +63,11 @@ private:
 
     mpiData taskdetails;
 
+    std::vector<Chessboard> solutions;
+    std::vector<Chessboard> allSolutions;
+
     int** alloc_2d_int(int rows, int cols);
 
 };
 
-#endif /* MASTER_HPP_ */
+#endif //WORKER_HPP_

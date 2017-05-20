@@ -15,24 +15,27 @@ class Master {
 public:
 
     Master(int n,
-           int psize,
-           bool unique_flag,
-           bool print_flag,
-           bool game_flag,
-           bool write_flag,
-           bool writeGB_flag);
+           int psize);
 
     virtual ~Master();
 
+    std::vector<Chessboard> allSolution;
+    std::vector<Chessboard> uniqueSolution;
+
     void solveAllSolutions();
+    void gatherSolutions(int &numberOf,
+                         std::vector<Chessboard> &solution);
     void shareAllSolutions();
     void solveUniqueSolutions();
-    void solveUniqueSolutionsByBlock();
     void printSolutions();
     void printGameBoard();
     void writeSolutions();
     void writeGameBoard();
 
+    int  numberOfSolutions = 0;
+    int  numberOfUniqueSolutions = 0;
+
+private:
 
     const int WORK_REQUEST = -1;
     const int WORK_COMPLETE = -2;
@@ -40,8 +43,6 @@ public:
     const int WORK_COUNT = -4;
     const int WORK_UNIQUE = -5;
     const int WORK_SHARE = -6;
-
-private:
 
     int numberOfQueens;
     int numberOfProcessors;
@@ -51,20 +52,15 @@ private:
     bool writeFlag;
     bool writeGBFlag;
 
-    bool subcheck(int i, int j);
+    bool subCheck(int i, int j);
 
     MPI_Status status;
     int        proc;
     int        workerid, msg;
-    int        numberOfSolutions = 0;
-    int        numberOfUniqueSolutions = 0;
 
     MPI_Datatype mpi_taskdetails;
 
     int count;
-
-    std::vector<Chessboard> allSolution;
-    std::vector<Chessboard> uniqueSolution;
 
     int          nitems = 4;
     int          blocklengths[4] = {1,1,1,1};
