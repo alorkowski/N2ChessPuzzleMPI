@@ -1,3 +1,14 @@
+/*
+ * Chessboard.cpp
+ *
+ * DESCRIPTION: A class used to create an object storing a possible solution to the NQueen problem.
+ *
+ * Created on: May 21, 2017
+ *
+ * AUTHORS:
+ * Lorkowski, Alexander <alexander.lorkowski@epfl.ch>
+ */
+
 #include "Chessboard.hpp"
 #include <algorithm>
 #include <cstdlib>

@@ -1,3 +1,13 @@
+//! Handler.hpp
+/*!
+  \brief A class responsible for delegating tasks between MPI processes.
+  \author Lorkowski, Alexander <alexander.lorkowski@epfl.ch>
+  \version 1.0
+  \date  21 May 2017
+  \remark Ecole Polytechnic Federal de Lausanne (EPFL)
+  \remark MATH-454 Parallel and High-Performance Computing
+*/
+
 #ifndef HANDLER_HPP_
 #define HANDLER_HPP_
 
@@ -7,34 +17,75 @@
 #include <string>
 #include <stdlib.h>
 #include <cstdlib>
+#include <cmath>
 #include <iostream>
-#include <mpi.h>
+#include "mpi.h"
 #include "Chessboard.hpp"
 #include "NQueenSolver.hpp"
 
 class Handler {
 public:
 
+    /*! A constructor to instantiate variables for Handler object.
+     *
+     * \param n The total number of queens.
+     * \param psize The number of processors.
+     */
     Handler(int n,
-           int psize);
+            int psize);
 
+    /*! A virtual destructor for the Handler object.
+	 */
     virtual ~Handler();
 
+    /*! A method to solve for all possible solutions specific to processor Rank 0.
+     */
+    void masterSolveAllSolutions();
+
+    /*! A method to solve for all unique solutions specific to processor Rank 0.
+     */
+    void masterSolveUniqueSolutions();
+
+    /*! A method to solve for all possible solutions specific to any processor not Rank 0.
+     */
+    void workerSolveAllSolutions();
+
+    /*! A method to solve for all unique solutions specific to any processor not Rank 0.
+     */
+    void workerSolveUniqueSolutions();
+
+    /*! A method to transfer the contents of an array to a vector.
+     */
+    void rewriteVector(int **allSolutionArray);
+
+
+    void rewriteUniqueVector(int **uniqueSolutionArray);
+
+    /*! A method to print all solutions.
+     */
+    void printAllSolutions();
+
+    /*! A method to print all solutions in a traditional chessboard format.
+     */
+    void printAllGameBoards();
+
+    /*! A method to print all unique solutions.
+     */
+    void printUniqueSolutions();
+
+    /*! A method to print all unique solutions in a traditional chessboard format.
+     */
+    void printUniqueGameBoards();
+
+    void convertAllSolutionVectorToArray();
+    void convertUniqueSolutionVectorToArray();
+
+    int  numberOfSolutions = 0;
+    int  numberOfUniqueSolutions = 0;
     std::vector<Chessboard> allSolutions;
     std::vector<Chessboard> uniqueSolutions;
     int** allSolutionsArray;
     int** uniqueSolutionsArray;
-
-    void masterSolveAllSolutions();
-    void masterSolveUniqueSolutions();
-    void workerSolveAllSolutions();
-    void workerSolveUniqueSolutions();
-    void collectAllSolutions();
-    void sendPartialSolutions();
-    void rewriteVector(int **allSolutionArray);
-
-    int  numberOfSolutions = 0;
-    int  numberOfUniqueSolutions = 0;
 
 private:
 
@@ -63,23 +114,26 @@ private:
     int        proc;
     int        workerid, msg;
 
-    MPI_Datatype mpi_taskdetails;
+    MPI_Datatype mpiTaskDetails;
 
-    int          nitems = 4;
-    int          blocklengths[4] = {1,1,1,1};
-    MPI_Datatype types[4] = {MPI_INT, MPI_INT, MPI_INT, MPI_INT};
-    MPI_Aint     offsets[4];
+    int          nItems = 4;
+    int          blockLengths[4] = {1,1,1,1};
+    MPI_Datatype mpiTypes[4] = {MPI_INT, MPI_INT, MPI_INT, MPI_INT};
+    MPI_Aint     mpiOffsets[4];
 
     typedef struct mpiData {
         int task;
-        int i;
-        int j;
+        int columnPlacement;
+        int rowPlacement;
         int numberOfSolutions;
     } mpiData;
 
-    mpiData taskdetails;
+    mpiData taskDetails;
 
-    int** alloc_2d_int(int rows, int cols);
+    int** allocate2DInt(int rows, int cols);
+
+    bool allSolutionAllocated = false;
+    bool uniqueSolutionAllocated = false;
 
 };
 

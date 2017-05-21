@@ -1,3 +1,13 @@
+//! Chessboard.hpp
+/*!
+  \brief A class constructing an object storing the state of the NQueen problem.
+  \author Lorkowski, Alexander <alexander.lorkowski@epfl.ch>
+  \version 1.0
+  \date  21 May 2017
+  \remark Ecole Polytechnic Federal de Lausanne (EPFL)
+  \remark MATH-454 Parallel and High-Performance Computing
+*/
+
 #ifndef CHESSBOARD_HPP_
 #define CHESSBOARD_HPP_
 
@@ -7,28 +17,46 @@
 
 class Chessboard {
 public:
-	// Constructor for a chessboard of with (non-zero) sides of length size.
-	// Size represents the 'N' parameter in the N-Queens problem.
+	/*! A constructor to instantiate variables for Chessboard object.
+     *
+     * \param size The total number of queens and consequently the length of the chessboard.
+     */
 	Chessboard(int size);
 
-	// Destructor.
+	/*! A virtual destructor for the Chessboard object.
+	 */
 	~Chessboard();
 
-	// Returns the size of the chessboard.
+	/*! A method when called returns the size of the Chessboard object.
+     *
+     * \return The size of the Chessboard object.
+     */
 	size_t getSize() const;
 
-    // Return the raw board representation. This is used to set the board.
+	/*! A method to set the position of a queen on the chessboard.
+     *
+     * \param index The row where to place the queen.
+     * \param position The column where to place the queen.
+     */
     void setState(int index, int position);
 
-	// Return the raw board representation. This is used to set the board.
+	/*! A method to get the current state of the Chessboard object.
+     *
+     * \return The state of the Chessboard object in a vector.
+     */
 	std::vector<int> getState();
 
+	/*! A method to print the current state of the Chessboard object.
+     */
 	void print();
 
+    /*! A method to print the current state of the Chessboard object in a traditional chessboard format.
+     */
 	void printGameBoard();
 
 private:
-	// vector representing the board.
+    /*! A vector containing the current state of the Chessboard object.
+     */
 	std::vector<int> state;
 };
 

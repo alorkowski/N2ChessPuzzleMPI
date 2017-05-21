@@ -1,25 +1,39 @@
-#include <cmath>
+/*
+ * Handler.cpp
+ *
+ * DESCRIPTION: A class responsible for handling MPI protocols.
+ *
+ * Created on: May 21, 2017
+ *
+ * AUTHORS:
+ * Lorkowski, Alexander <alexander.lorkowski@epfl.ch>
+ */
+
 #include "Handler.hpp"
 
 Handler::Handler(int n,
-                 int psize) :
-        numberOfQueens(n),
-        numberOfProcessors(psize - 1) {
+                 int psize) : numberOfQueens(n),
+                              numberOfProcessors(psize - 1) {
 
-    offsets[0] = offsetof(mpiData, task);
-    offsets[1] = offsetof(mpiData, i);
-    offsets[2] = offsetof(mpiData, j);
-    offsets[3] = offsetof(mpiData, numberOfSolutions);
+    mpiOffsets[0] = offsetof(mpiData, task);
+    mpiOffsets[1] = offsetof(mpiData, rowPlacement);
+    mpiOffsets[2] = offsetof(mpiData, columnPlacement);
+    mpiOffsets[3] = offsetof(mpiData, numberOfSolutions);
 
-    MPI_Type_create_struct(nitems, blocklengths, offsets, types, &mpi_taskdetails);
-    MPI_Type_commit(&mpi_taskdetails);
-
-    NQueenSolver solver = NQueenSolver();
+    MPI_Type_create_struct(nItems, blockLengths, mpiOffsets, mpiTypes, &mpiTaskDetails);
+    MPI_Type_commit(&mpiTaskDetails);
 }
 
-Handler::~Handler() {}
+Handler::~Handler() {
+    if (allSolutionAllocated) {
+        free(allSolutionsArray);
+    }
+    if (uniqueSolutionAllocated) {
+        free(uniqueSolutionsArray);
+    }
+}
 
-int** Handler::alloc_2d_int(int rows, int cols) {
+int** Handler::allocate2DInt(int rows, int cols) {
     int *data = (int *)malloc(rows*cols*sizeof(int));
     int **array= (int **)malloc(rows*sizeof(int*));
     for (int i=0; i<rows; i++)
@@ -36,7 +50,7 @@ bool Handler::subCheck(int i, int j) {
 
 
 void Handler::masterSolveAllSolutions() {
-    taskdetails.task = WORK_COUNT;
+    taskDetails.task = WORK_COUNT;
     int threshold = (numberOfQueens - 1) * (numberOfQueens - 2);
     if (numberOfProcessors >= threshold) {
         for (int i = 0; i < numberOfQueens; i++) {
@@ -46,11 +60,9 @@ void Handler::masterSolveAllSolutions() {
                     MPI_Recv(&msg, 1, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
                     workerid = status.MPI_SOURCE;
 
-                    if (msg == WORK_REQUEST) {
-                        taskdetails.i = i;
-                        taskdetails.j = j;
-                        MPI_Send(&taskdetails, 1, mpi_taskdetails, workerid, 0, MPI_COMM_WORLD);
-                    }
+                    taskDetails.rowPlacement = j;
+                    taskDetails.columnPlacement = i;
+                    MPI_Send(&taskDetails, 1, mpiTaskDetails, workerid, 0, MPI_COMM_WORLD);
                 } else {
                     continue;
                 }
@@ -61,41 +73,37 @@ void Handler::masterSolveAllSolutions() {
             MPI_Recv(&msg, 1, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
             workerid = status.MPI_SOURCE;
 
-            if (msg == WORK_REQUEST) {
-                taskdetails.i = i;
-                taskdetails.j = i;
-                MPI_Send(&taskdetails, 1, mpi_taskdetails, workerid, 0, MPI_COMM_WORLD);
-            }
+            taskDetails.columnPlacement = i;
+            taskDetails.rowPlacement = i;
+            MPI_Send(&taskDetails, 1, mpiTaskDetails, workerid, 0, MPI_COMM_WORLD);
         }
     }
 
     for (int i = 1; i <= numberOfProcessors; i++) {
-        taskdetails.task = WORK_STANDBY;
+        taskDetails.task = WORK_STANDBY;
         workerid = i;
         MPI_Recv(&msg, 1, MPI_INT, workerid, 0, MPI_COMM_WORLD, &status);
-        MPI_Send(&taskdetails, 1, mpi_taskdetails, workerid, 0, MPI_COMM_WORLD);
+        MPI_Send(&taskDetails, 1, mpiTaskDetails, workerid, 0, MPI_COMM_WORLD);
     }
 }
 
 
 void Handler::masterSolveUniqueSolutions() {
-    taskdetails.task = WORK_UNIQUE;
+    taskDetails.task = WORK_UNIQUE;
     for (int i = 0; i < numberOfSolutions; i++) {
         MPI_Recv(&msg, 1, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
         workerid = status.MPI_SOURCE;
 
-        if (msg == WORK_REQUEST){
-            taskdetails.i = i;
-            taskdetails.j = i;
-            MPI_Send(&taskdetails, 1, mpi_taskdetails, workerid, 0, MPI_COMM_WORLD);
-        }
+        taskDetails.rowPlacement = i;
+        taskDetails.columnPlacement = i;
+        MPI_Send(&taskDetails, 1, mpiTaskDetails, workerid, 0, MPI_COMM_WORLD);
     }
 
     for (int i = 1; i <= numberOfProcessors; i++) {
-        taskdetails.task = WORK_STANDBY;
+        taskDetails.task = WORK_STANDBY;
         workerid = i;
         MPI_Recv(&msg, 1, MPI_INT, workerid, 0, MPI_COMM_WORLD, &status);
-        MPI_Send(&taskdetails, 1, mpi_taskdetails, workerid, 0, MPI_COMM_WORLD);
+        MPI_Send(&taskDetails, 1, mpiTaskDetails, workerid, 0, MPI_COMM_WORLD);
     }
 }
 
@@ -105,24 +113,30 @@ void Handler::workerSolveAllSolutions() {
 
     while (1) {
         MPI_Send(&WORK_REQUEST, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
-        MPI_Recv(&taskdetails, 1, mpi_taskdetails, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        MPI_Recv(&taskDetails, 1, mpiTaskDetails, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-        task = taskdetails.task;
+        task = taskDetails.task;
 
         if (task == WORK_STANDBY) { break; }
 
-        int col = 0;
+        int rootColumn = 0;
 
-        if (taskdetails.i != taskdetails.j) {
-            chessboard.setState(0, taskdetails.i);
-            chessboard.setState(1, taskdetails.j);
-            col += 2;
+        if (taskDetails.columnPlacement != taskDetails.rowPlacement) {
+            chessboard.setState(0, taskDetails.columnPlacement);
+            chessboard.setState(1, taskDetails.rowPlacement);
+            rootColumn += 2;
         } else {
-            chessboard.setState(0, taskdetails.i);
-            col += 1;
+            chessboard.setState(0, taskDetails.columnPlacement);
+            rootColumn += 1;
         }
 
-        solver.solve(col - 1, taskdetails.j, numberOfQueens, col, chessboard, allSolutions, numberOfSolutions);
+        solver.solve(rootColumn - 1,
+                     taskDetails.rowPlacement,
+                     numberOfQueens,
+                     rootColumn,
+                     chessboard,
+                     allSolutions,
+                     numberOfSolutions);
     }
 }
 
@@ -130,65 +144,52 @@ void Handler::workerSolveAllSolutions() {
 void Handler::workerSolveUniqueSolutions() {
     while (1) {
         MPI_Send(&WORK_REQUEST, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
-        MPI_Recv(&taskdetails, 1, mpi_taskdetails, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        MPI_Recv(&taskDetails, 1, mpiTaskDetails, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-        task = taskdetails.task;
+        task = taskDetails.task;
 
         if (task == WORK_STANDBY) { break; }
 
-        int i = taskdetails.i;
+        int columnIndex = taskDetails.columnPlacement;
 
-        solver.UniqGB(i, numberOfQueens, allSolutions, uniqueSolutions, numberOfUniqueSolutions);
+        solver.UniqGB(columnIndex,
+                      numberOfQueens,
+                      allSolutions,
+                      uniqueSolutions,
+                      numberOfUniqueSolutions);
     }
 };
 
 
-void Handler::collectAllSolutions() {
-    int count = 0;
-    allSolutions.clear();
+void Handler::convertAllSolutionVectorToArray() {
 
-    for (proc = 1; proc <= numberOfProcessors; proc++){
-        MPI_Recv(&count, 1, MPI_INT, proc, 0, MPI_COMM_WORLD, &status);
+    allSolutionsArray = allocate2DInt(numberOfSolutions, numberOfQueens);
 
-        if (count <= 0){ continue; }
+    allSolutionAllocated = true;
 
-        int **partialSolution;
-        partialSolution = alloc_2d_int(count, numberOfQueens);
+    if (numberOfSolutions == 0) { return; }
 
-        MPI_Recv(&(partialSolution[0][0]), count*numberOfQueens, MPI_INT, proc, 0, MPI_COMM_WORLD, &status);
-
-        for(int i = 0; i < count; i++) {
-            Chessboard reconstructedChessboard(numberOfQueens);
-            for(int j = 0; j < numberOfQueens; j++) {
-                reconstructedChessboard.setState(j, partialSolution[i][j]);
-            }
-            allSolutions.push_back(reconstructedChessboard);
+    for (int i = 0; i < numberOfSolutions; ++i) {
+        for (int j = 0; j < numberOfQueens; ++j) {
+            allSolutionsArray[i][j] = allSolutions.at(i).getState().at(j);
         }
-
-        free(partialSolution[0]);
-        free(partialSolution);
     }
 }
 
 
-void Handler::sendPartialSolutions() {
+void Handler::convertUniqueSolutionVectorToArray() {
 
-    MPI_Send(&numberOfSolutions, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
-    if (numberOfSolutions == 0) { return; }
+    uniqueSolutionsArray = allocate2DInt(numberOfUniqueSolutions, numberOfQueens);
 
-    int **contiguousMemoryArray;
-    contiguousMemoryArray = alloc_2d_int(numberOfSolutions, numberOfQueens);
+    uniqueSolutionAllocated = true;
 
-    for (int i = 0; i < numberOfSolutions; ++i) {
+    if (numberOfUniqueSolutions == 0) { return; }
+
+    for (int i = 0; i < numberOfUniqueSolutions; ++i) {
         for (int j = 0; j < numberOfQueens; ++j) {
-            contiguousMemoryArray[i][j] = allSolutions.at(i).getState().at(j);
+            uniqueSolutionsArray[i][j] = uniqueSolutions.at(i).getState().at(j);
         }
     }
-
-    MPI_Send(&(contiguousMemoryArray[0][0]), numberOfSolutions * numberOfQueens, MPI_INT, 0, 0, MPI_COMM_WORLD);
-
-    free(contiguousMemoryArray[0]);
-    free(contiguousMemoryArray);
 }
 
 
@@ -201,4 +202,54 @@ void Handler::rewriteVector(int **allSolutionArray) {
         }
         allSolutions.push_back(reconstructedChessboard);
     }
+}
+
+void Handler::rewriteUniqueVector(int **uniqueSolutionArray) {
+    uniqueSolutions.clear();
+    for(int i = 0; i < numberOfUniqueSolutions; i++) {
+        Chessboard reconstructedChessboard(numberOfQueens);
+        for(int j = 0; j < numberOfQueens; j++) {
+            reconstructedChessboard.setState(j, uniqueSolutionArray[i][j]);
+        }
+        uniqueSolutions.push_back(reconstructedChessboard);
+    }
+}
+
+
+void Handler::printAllSolutions() {
+    std::cout << std::endl << "Printing solutions as arrays" << std::endl;
+    for (int i = 0; i < numberOfSolutions; i++) {
+        allSolutions.at(i).print();
+    }
+    std::cout << std::endl;
+}
+
+
+void Handler::printAllGameBoards() {
+    std::cout << std::endl << "Printing solutions as in traditional chessboard format" << std::endl;
+    for (int i = 0; i < numberOfSolutions; i++) {
+        std::cout << std::endl << "No. " << i << std::endl << "**************" << std::endl;
+        allSolutions.at(i).printGameBoard();
+    }
+    std::cout << std::endl;
+}
+
+
+
+void Handler::printUniqueSolutions() {
+    std::cout << std::endl << "Printing unique solutions as arrays" << std::endl;
+    for (int i = 0; i < numberOfUniqueSolutions; i++) {
+        uniqueSolutions.at(i).print();
+    }
+    std::cout << std::endl;
+}
+
+
+void Handler::printUniqueGameBoards() {
+    std::cout << std::endl << "Printing unique solutions as in traditional chessboard format" << std::endl;
+    for (int i = 0; i < numberOfUniqueSolutions; i++) {
+        std::cout << std::endl << "Unique No. " << i << std::endl << "**************" << std::endl;
+        uniqueSolutions.at(i).printGameBoard();
+    }
+    std::cout << std::endl;
 }

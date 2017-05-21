@@ -1,0 +1,1 @@
+CMakeLists.txt not found in /Users/alorkowski/Desktop/EPFL/nqueen-mpic++/N2ChessPuzzleMPI

@@ -1,4 +1,14 @@
-#include <iostream>
+/*
+ * NQueenSolver.cpp
+ *
+ * DESCRIPTION: Contains the backtracking algorithm and methods to filter out unique solutions.
+ *
+ * Created on: May 21, 2017
+ *
+ * AUTHORS:
+ * Lorkowski, Alexander <alexander.lorkowski@epfl.ch>
+ */
+
 #include "NQueenSolver.hpp"
 
 #define conflict(i, j, col) (hist.getState().at(j) == i || abs(hist.getState().at(j) - i) == col - j)
