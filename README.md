@@ -41,15 +41,15 @@ How To Run
 The code provides a few command line options.  Either include a flag or a flag
 followed by a value accoring to the table below:
 
-  CMD Flag | Argument         | What does it do?
- ==========|==================|=================
-     -n    | number of queens | Sets problem size
-     -u    | n/a              | Solve for unique solutions
-     -p    | n/a              | Print solutions as an array
-     -gb   | n/a              | Print solutions in chessboard format
-     -w    | n/a              | Write solutions	to a file as an array
-     -wg   | n/a              | Write solutions to a file in Chessboard format
-     -dlx  | n/a              | Solve using Dancking Links algorithm (*)
+  | CMD Flag | Argument         | What does it do?                               |
+  | :------: | :--------------: | :--------------------------------------------: | 
+  |   -n     | number of queens | Sets problem size                              |
+  |   -u     | n/a              | Solve for unique solutions                     |
+  |   -p     | n/a              | Print solutions as an array                    |
+  |   -gb    | n/a              | Print solutions in chessboard format           |
+  |   -w     | n/a              | Write solutions to a file as an array          |
+  |   -wg    | n/a              | Write solutions to a file in Chessboard format |
+  |   -dlx   | n/a              | Solve using Dancking Links algorithm (*)       |
 
 (*) Only available in the DLX version of the code.
 
