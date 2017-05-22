@@ -26,12 +26,15 @@ int** allocate2DInt(int rows, int cols) {
     return array;
 }
 
+
 int main(int argc, char **argv) {
     int    prank, psize;
     int    numberOfQueens = 0;
-    bool   uniqueFlag = false;
     bool   printFlag = false;
     bool   gameFlag = false;
+    bool   uniqueFlag = false;
+    bool   uniquePrintFlag = false;
+    bool   uniqueGameFlag = false;
 
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &prank);
@@ -49,6 +52,8 @@ int main(int argc, char **argv) {
         else if (strcmp(argv[i], "-u") == 0){ uniqueFlag = true; }
         else if (strcmp(argv[i], "-p") == 0){ printFlag = true; }
         else if (strcmp(argv[i], "-g") == 0){ gameFlag = true; }
+        else if (strcmp(argv[i], "-up") == 0){ uniquePrintFlag = true; }
+        else if (strcmp(argv[i], "-ug") == 0){ uniqueGameFlag = true; }
         else {}
     }
     if (numberOfQueens == 0){ numberOfQueens = 4; }
@@ -75,12 +80,12 @@ int main(int argc, char **argv) {
 
         int localRecvCounts[psize];
         int globalRecvCounts[psize];
-        int mpiRecvDisplacements[psize];
+        int globalRecvDisplacements[psize];
 
         for (int i = 0; i < psize; ++i) {
             localRecvCounts[i] = 0;
             globalRecvCounts[i] = 0;
-            mpiRecvDisplacements[i] = 0;
+            globalRecvDisplacements[i] = 0;
         }
 
         localRecvCounts[prank] = numberOfQueens * handler.numberOfSolutions;
@@ -94,9 +99,9 @@ int main(int argc, char **argv) {
 
         for (int i = 0; i < psize; ++i) {
             if (i == 0 ) {
-                mpiRecvDisplacements[i] = 0;
+                globalRecvDisplacements[i] = 0;
             } else {
-                mpiRecvDisplacements[i] = mpiRecvDisplacements[i - 1] + globalRecvCounts[i - 1];
+                globalRecvDisplacements[i] = globalRecvDisplacements[i - 1] + globalRecvCounts[i - 1];
             }
         }
 
@@ -110,7 +115,7 @@ int main(int argc, char **argv) {
                     MPI_INT,
                     &(allSolutions[0][0]),
                     globalRecvCounts,
-                    mpiRecvDisplacements,
+                    globalRecvDisplacements,
                     MPI_INT,
                     0,
                     MPI_COMM_WORLD);
@@ -148,7 +153,7 @@ int main(int argc, char **argv) {
             for (int i = 0; i < psize; ++i) {
                 localRecvCounts[i] = 0;
                 globalRecvCounts[i] = 0;
-                mpiRecvDisplacements[i] = 0;
+                globalRecvDisplacements[i] = 0;
             }
 
             localRecvCounts[prank] = numberOfQueens * handler.numberOfUniqueSolutions;
@@ -162,9 +167,9 @@ int main(int argc, char **argv) {
 
             for (int i = 0; i < psize; ++i) {
                 if (i == 0 ) {
-                    mpiRecvDisplacements[i] = 0;
+                    globalRecvDisplacements[i] = 0;
                 } else {
-                    mpiRecvDisplacements[i] = mpiRecvDisplacements[i - 1] + globalRecvCounts[i - 1];
+                    globalRecvDisplacements[i] = globalRecvDisplacements[i - 1] + globalRecvCounts[i - 1];
                 }
             }
 
@@ -179,7 +184,7 @@ int main(int argc, char **argv) {
                         MPI_INT,
                         &(uniqueSolutions[0][0]),
                         globalRecvCounts,
-                        mpiRecvDisplacements,
+                        globalRecvDisplacements,
                         MPI_INT,
                         0,
                         MPI_COMM_WORLD);
@@ -196,22 +201,31 @@ int main(int argc, char **argv) {
     }
 
     if (prank == MASTER){
-        printf("Number of solutions = %i \n",(numberOfSolutions));
-
-        if ( printFlag || gameFlag ) {
-            handler.numberOfSolutions = numberOfSolutions;
-            if (uniqueFlag) {
-                handler.numberOfUniqueSolutions = numberOfUniqueSolutions;
-            }
-        }
+        handler.numberOfSolutions = numberOfSolutions;
+        handler.numberOfUniqueSolutions = numberOfUniqueSolutions;
 
         if (printFlag) { handler.printAllSolutions(); }
         if (gameFlag) { handler.printAllGameBoards(); }
+        if (uniquePrintFlag) {
+            if (!uniqueFlag) {
+                std::cout << "Warning: Program not set to solve for unique solutions.  Please run with -u."
+                          << std::endl;
+            } else {
+                handler.printUniqueSolutions();
+            }
+        }
+        if (uniqueGameFlag) {
+            if (!uniqueFlag) {
+                std::cout << "Warning: Program not set to solve for unique solutions.  Please run with -u."
+                          << std::endl;
+            } else {
+                handler.printUniqueGameBoards();
+            }
+        }
 
+        printf("Number of solutions = %i \n",(numberOfSolutions));
         if (uniqueFlag) {
             printf("Number of unique solutions = %i \n",(numberOfUniqueSolutions));
-            if (printFlag) { handler.printUniqueSolutions(); }
-            if (gameFlag) { handler.printUniqueGameBoards(); }
         }
 
         printf("Execution time = %f [s] \n",(MPI_Wtime()-t));

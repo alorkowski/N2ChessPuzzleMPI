@@ -235,7 +235,6 @@ void Handler::printAllGameBoards() {
 }
 
 
-
 void Handler::printUniqueSolutions() {
     std::cout << std::endl << "Printing unique solutions as arrays" << std::endl;
     for (int i = 0; i < numberOfUniqueSolutions; i++) {

@@ -6,35 +6,27 @@
 class Handler {
 public:
 
-    Handler(int n,
-            bool unique_flag,
-            bool print_flag,
-            bool game_flag,
-            bool write_flag,
-            bool writeGB_flag);
+    Handler(int n);
 
     virtual ~Handler();
 
     void solveAllSolutions();
-    void solveUniqueSolutions();
     void printSolutions();
-    void printGameBoard();
+    void printGameBoards();
     void writeSolutions();
-    void writeGameBoard();
+    void writeGameBoards();
+    void solveUniqueSolutions();
+    void printUniqueSolutions();
+    void printUniqueGameBoards();
+
+    int numberOfSolutions = 0;
+    int numberOfUniqueSolutions = 0;
 
 private:
 
     int numberOfQueens;
-    bool uniqueFlag;
-    bool printFlag;
-    bool gameFlag;
-    bool writeFlag;
-    bool writeGBFlag;
 
     bool subcheck(int i, int j);
-
-    int numberOfSolutions = 0;
-    int numberOfUniqueSolutions = 0;
 
     std::vector<Chessboard> allSolution;
     std::vector<Chessboard> uniqueSolution;
