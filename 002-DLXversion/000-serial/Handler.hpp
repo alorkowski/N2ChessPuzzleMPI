@@ -3,44 +3,35 @@
 
 #include <cstdlib>
 #include <iostream>
-#include "Chessboard.hpp"
 #include "NQueenSolver.hpp"
+#include "Chessboard.hpp"
 #include "DLXNQueenSolver.hpp"
 
 class Handler {
 public:
 
-    Handler(int n,
-            bool unique_flag,
-            bool print_flag,
-            bool game_flag,
-            bool write_flag,
-            bool writeGB_flag,
-            bool dlx_flag);
+    Handler(int n);
 
     virtual ~Handler();
 
     void solveAllSolutions();
-    void solveUniqueSolutions();
     void printSolutions();
-    void printGameBoard();
+    void printGameBoards();
     void writeSolutions();
-    void writeGameBoard();
+    void writeGameBoards();
+    void solveUniqueSolutions();
+    void printUniqueSolutions();
+    void printUniqueGameBoards();
+    void solveAllSolutionsDLX();
+
+    int numberOfSolutions = 0;
+    int numberOfUniqueSolutions = 0;
 
 private:
 
     int numberOfQueens;
-    bool uniqueFlag;
-    bool printFlag;
-    bool gameFlag;
-    bool writeFlag;
-    bool writeGBFlag;
-    bool dlxFlag;
 
     bool subcheck(int i, int j);
-
-    int numberOfSolutions = 0;
-    int numberOfUniqueSolutions = 0;
 
     std::vector<Chessboard> allSolution;
     std::vector<Chessboard> uniqueSolution;

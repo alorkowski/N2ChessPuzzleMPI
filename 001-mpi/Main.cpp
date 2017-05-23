@@ -58,7 +58,7 @@ int main(int argc, char **argv) {
     }
     if (numberOfQueens == 0){ numberOfQueens = 4; }
 
-    Handler handler(numberOfQueens, psize);
+    Handler handler(numberOfQueens, prank, psize);
     int numberOfSolutions;
     int numberOfUniqueSolutions;
 
@@ -133,12 +133,11 @@ int main(int argc, char **argv) {
                       MPI_COMM_WORLD);
             handler.numberOfSolutions = numberOfSolutions;
 
-            if (prank == MASTER) {
-                handler.masterSolveUniqueSolutions();
-            } else {
+            if (prank != MASTER) {
                 handler.rewriteVector(allSolutions);
-                handler.workerSolveUniqueSolutions();
             }
+
+            handler.solveUniqueSolutions();
 
             free(allSolutions);
 

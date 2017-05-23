@@ -18,6 +18,8 @@ The original paper can be found in the following link:
 
 http://arxiv.org/pdf/cs/0011047v1.pdf
 
+At the present, the DLX code can only count the number of solutions.  It cannot print or solve for unique solutions.
+
 All the source code in the 002-DLXversion/002-DLXinclude directory are not my
 source code. After implementing the backtracking algorithm, I was intrigued
 by the efficiency of the DLX algorithm and so I incorporated it into my code
@@ -52,6 +54,7 @@ followed by a value accoring to the table below:
   |   -dlx   | n/a              | Solve using Dancking Links algorithm (*)       |
 
 (*) Only available in the DLX version of the code.
+(*) -n flag only
 
 Examples:
 

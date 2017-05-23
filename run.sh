@@ -1,30 +1,53 @@
 #!/bin/bash
 
 ######### Adjustable parameters #############
-n=10    # N number of NQueens
+maxNumberOfQueens=10    # N number of NQueens
 imax=10 # Maximum number of iterations
-cpu=4   # Number of processes
+maxCPU=4   # Number of processes
 #u="-u" # Flag to search for unique solutions
 #p="-p" # Flag to reconstruct the game boards
 ######### End Adjustable parameters #########
 
-i=1
-serial_sum=0
-mpi_sum=0
+n=4
+serialCPU=0
 
-while [ $i -le $imax ];do
-    echo "iteration number: " $i
-    
-    serial_value="$(./nqueen-serial -n $n $u $p | tail -1 | awk '{print $4}')"
-    tmp=`echo $serial_sum + $serial_value | bc`    
-    serial_sum=$tmp
+awk 'BEGIN {printf("%15s %15s %15s %15s \n" , "NumberOfQueens", "NumberOfCPUs", "AverageTime", "StdDeviation")}'
 
-    mpi_value="$(mpirun -np $cpu ./nqueen-mpi -n $n $u $p | tail -1 | awk '{print $4}')"
-    tmp=`echo $mpi_sum + $mpi_value | bc`
-    mpi_sum=$tmp
+while [ $n -le $maxNumberOfQueens ];do
+    cpuNumber=0
+    while [ $cpuNumber -le $maxCPU ];do
+	timeArray=()
+	i=1
+	while [ $i -le $imax ];do
+	    if [  $cpuNumber -eq $serialCPU ];then
+		time="$(./build/nqueen-serial -n $n $u $p | tail -1 | awk '{print $4}')"
+		timeArray+=($time)
+	    else
+		time="$(mpirun -np $cpuNumber ./build/nqueen-mpi -n $n $u $p | tail -1 | awk '{print $4}')"
+		timeArray+=($time)
+	    fi
     
-    i=`expr $i + 1`
+	    i=`expr $i + 1`
+	done
+
+	ave=$(
+	    echo "$timeArray" |
+		awk '{sum+=$1}END{print sum/'$imax' }'
+	   )
+	
+	std=$(
+	    echo "$timeArray" |
+		awk '{sum+=$1; sumsq+=$1*$1}END{print sqrt(sumsq/'$imax' - (sum/'$imax')**2)}'
+	   )
+
+	if [  $cpuNumber -eq $serialCPU ];then
+	    awk 'BEGIN {printf("%15i %15.8f %15.8f %15.8f \n" ,'$n', 1,'$ave','$std')}'
+	else
+	    awk 'BEGIN {printf("%15i %15.8f %15.8f %15.8f \n" ,'$n','$cpuNumber','$ave','$std')}'
+	fi
+
+	cpuNumber=`expr $cpuNumber + 2`
+    done
+    n=`expr $n + 1`
 done
 
-awk 'BEGIN {print "serial         : " '$serial_sum'/'$imax' " [s]"; exit}'
-awk 'BEGIN {print "mpi            : " '$mpi_sum'/'$imax' " [s]"; exit}'

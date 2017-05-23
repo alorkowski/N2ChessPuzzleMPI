@@ -3,7 +3,7 @@ CXXMPI = mpicxx
 CXXFLAGS += -std=c++11 -Wall -O2
 
 SERIAL_SRC = 000-serial/*.cpp
-MPI_SRC = 001-mpi/*.cpp
+#MPI_SRC = 001-mpi/*.cpp
 DLX_SRC = 002-DLXinclude/*.cpp
 
 all: examples
@@ -11,7 +11,6 @@ all: examples
 examples:
 	mkdir -p build
 	$(CXX) $(CXXFLAGS) -o build/nqueen-serial $(SERIAL_SRC) $(DLX_SRC)
-	$(CXXMPI) $(CXXFLAGS) -o build/nqueen-mpi $(MPI_SRC) $(DLX_SRC)
 
 clean:
 	rm -rf build

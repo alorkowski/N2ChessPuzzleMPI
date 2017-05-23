@@ -12,7 +12,9 @@
 #include "Handler.hpp"
 
 Handler::Handler(int n,
+                 int prank,
                  int psize) : numberOfQueens(n),
+                              rankOfProcessor(prank),
                               numberOfProcessors(psize - 1) {
 
     mpiOffsets[0] = offsetof(mpiData, task);
@@ -81,28 +83,8 @@ void Handler::masterSolveAllSolutions() {
 
     for (int i = 1; i <= numberOfProcessors; i++) {
         taskDetails.task = WORK_STANDBY;
-        workerid = i;
-        MPI_Recv(&msg, 1, MPI_INT, workerid, 0, MPI_COMM_WORLD, &status);
-        MPI_Send(&taskDetails, 1, mpiTaskDetails, workerid, 0, MPI_COMM_WORLD);
-    }
-}
-
-
-void Handler::masterSolveUniqueSolutions() {
-    taskDetails.task = WORK_UNIQUE;
-    for (int i = 0; i < numberOfSolutions; i++) {
         MPI_Recv(&msg, 1, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
         workerid = status.MPI_SOURCE;
-
-        taskDetails.rowPlacement = i;
-        taskDetails.columnPlacement = i;
-        MPI_Send(&taskDetails, 1, mpiTaskDetails, workerid, 0, MPI_COMM_WORLD);
-    }
-
-    for (int i = 1; i <= numberOfProcessors; i++) {
-        taskDetails.task = WORK_STANDBY;
-        workerid = i;
-        MPI_Recv(&msg, 1, MPI_INT, workerid, 0, MPI_COMM_WORLD, &status);
         MPI_Send(&taskDetails, 1, mpiTaskDetails, workerid, 0, MPI_COMM_WORLD);
     }
 }
@@ -141,22 +123,17 @@ void Handler::workerSolveAllSolutions() {
 }
 
 
-void Handler::workerSolveUniqueSolutions() {
-    while (1) {
-        MPI_Send(&WORK_REQUEST, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
-        MPI_Recv(&taskDetails, 1, mpiTaskDetails, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+void Handler::solveUniqueSolutions() {
+    int currentIndex = rankOfProcessor;
+    while ( currentIndex < numberOfSolutions ) {
 
-        task = taskDetails.task;
-
-        if (task == WORK_STANDBY) { break; }
-
-        int columnIndex = taskDetails.columnPlacement;
-
-        solver.UniqGB(columnIndex,
+        solver.UniqGB(currentIndex,
                       numberOfQueens,
                       allSolutions,
                       uniqueSolutions,
                       numberOfUniqueSolutions);
+
+        currentIndex += numberOfProcessors + 1;
     }
 };
 

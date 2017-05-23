@@ -32,6 +32,7 @@ public:
      * \param psize The number of processors.
      */
     Handler(int n,
+            int prank,
             int psize);
 
     /*! A virtual destructor for the Handler object.
@@ -42,17 +43,13 @@ public:
      */
     void masterSolveAllSolutions();
 
-    /*! A method to solve for all unique solutions specific to processor Rank 0.
-     */
-    void masterSolveUniqueSolutions();
-
     /*! A method to solve for all possible solutions specific to any processor not Rank 0.
      */
     void workerSolveAllSolutions();
 
-    /*! A method to solve for all unique solutions specific to any processor not Rank 0.
+    /*! A method to solve for all unique solutions.
      */
-    void workerSolveUniqueSolutions();
+    void solveUniqueSolutions();
 
     /*! A method to transfer the contents of an array to a vector.
      */
@@ -101,12 +98,8 @@ private:
     int task;
 
     int numberOfQueens;
+    int rankOfProcessor;
     int numberOfProcessors;
-    bool uniqueFlag;
-    bool printFlag;
-    bool gameFlag;
-    bool writeFlag;
-    bool writeGBFlag;
 
     bool subCheck(int i, int j);
 
