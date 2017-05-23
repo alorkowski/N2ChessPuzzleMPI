@@ -40,6 +40,12 @@ int main(int argc, char **argv) {
     MPI_Comm_rank(MPI_COMM_WORLD, &prank);
     MPI_Comm_size(MPI_COMM_WORLD, &psize);
 
+    if ( psize < 2 ) {
+        std::cout << "Error.  Programs requires a minimum of two processors." << std::endl;
+        MPI_Finalize();
+        return 0;
+    }
+
     numberOfQueens = 0;
 
     double t = MPI_Wtime();

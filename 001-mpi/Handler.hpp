@@ -29,6 +29,7 @@ public:
     /*! A constructor to instantiate variables for Handler object.
      *
      * \param n The total number of queens.
+     * \param prank The rank of the processor.
      * \param psize The number of processors.
      */
     Handler(int n,
@@ -55,7 +56,8 @@ public:
      */
     void rewriteVector(int **allSolutionArray);
 
-
+    /*! A method to transfer the contents of an array to a vector.
+     */
     void rewriteUniqueVector(int **uniqueSolutionArray);
 
     /*! A method to print all solutions.

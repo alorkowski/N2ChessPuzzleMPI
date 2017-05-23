@@ -26,6 +26,7 @@ Handler::Handler(int n,
     MPI_Type_commit(&mpiTaskDetails);
 }
 
+
 Handler::~Handler() {
     if (allSolutionAllocated) {
         free(allSolutionsArray);
@@ -34,6 +35,7 @@ Handler::~Handler() {
         free(uniqueSolutionsArray);
     }
 }
+
 
 int** Handler::allocate2DInt(int rows, int cols) {
     int *data = (int *)malloc(rows*cols*sizeof(int));
@@ -53,8 +55,8 @@ bool Handler::subCheck(int i, int j) {
 
 void Handler::masterSolveAllSolutions() {
     taskDetails.task = WORK_COUNT;
-    int threshold = (numberOfQueens - 1) * (numberOfQueens - 2);
-    if (numberOfProcessors >= threshold) {
+//    int threshold = (numberOfQueens - 1) * (numberOfQueens - 2);
+    if (numberOfProcessors > numberOfQueens) {
         for (int i = 0; i < numberOfQueens; i++) {
             for (int j = 0; j < numberOfQueens; j++) {
                 if (!subCheck(i, j)) {
@@ -180,6 +182,7 @@ void Handler::rewriteVector(int **allSolutionArray) {
         allSolutions.push_back(reconstructedChessboard);
     }
 }
+
 
 void Handler::rewriteUniqueVector(int **uniqueSolutionArray) {
     uniqueSolutions.clear();
