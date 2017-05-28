@@ -24,6 +24,8 @@ Handler::Handler(int n,
 
     MPI_Type_create_struct(nItems, blockLengths, mpiOffsets, mpiTypes, &mpiTaskDetails);
     MPI_Type_commit(&mpiTaskDetails);
+
+    omp_init_lock(&lock);
 }
 
 
@@ -36,6 +38,8 @@ Handler::~Handler() {
         free(uniqueSolutionsArray[0]);
         free(uniqueSolutionsArray);
     }
+
+    omp_destroy_lock(&lock);
 }
 
 
@@ -45,7 +49,6 @@ int** Handler::allocate2DInt(int rows, int cols) {
     for (int i=0; i<rows; i++) {
         array[i] = &(data[cols * i]);
     }
-
     return array;
 }
 
@@ -58,33 +61,17 @@ bool Handler::subCheck(int i, int j) {
 
 void Handler::masterSolveAllSolutions() {
     taskDetails.task = WORK_COUNT;
-    if (numberOfProcessors > numberOfQueens) {
-        for (int i = 0; i < numberOfQueens; i++) {
-            for (int j = 0; j < numberOfQueens; j++) {
-                if (!subCheck(i, j)) {
 
-                    MPI_Recv(&msg, 1, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
-                    workerid = status.MPI_SOURCE;
+#pragma omp parallel for
+    for (int i = 0; i < numberOfQueens; i++) {
+        MPI_Recv(&msg, 1, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
+        workerid = status.MPI_SOURCE;
 
-                    taskDetails.rowPlacement = j;
-                    taskDetails.columnPlacement = i;
-                    MPI_Send(&taskDetails, 1, mpiTaskDetails, workerid, 0, MPI_COMM_WORLD);
-                } else {
-                    continue;
-                }
-            }
-        }
-    } else {
-        for (int i = 0; i < numberOfQueens; i++) {
-            MPI_Recv(&msg, 1, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
-            workerid = status.MPI_SOURCE;
-
-            taskDetails.columnPlacement = i;
-            taskDetails.rowPlacement = i;
-            MPI_Send(&taskDetails, 1, mpiTaskDetails, workerid, 0, MPI_COMM_WORLD);
-        }
+        taskDetails.columnPlacement = i;
+        MPI_Send(&taskDetails, 1, mpiTaskDetails, workerid, 0, MPI_COMM_WORLD);
     }
 
+#pragma omp parallel for
     for (int i = 1; i <= numberOfProcessors; i++) {
         taskDetails.task = WORK_STANDBY;
         MPI_Recv(&msg, 1, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
@@ -95,8 +82,6 @@ void Handler::masterSolveAllSolutions() {
 
 
 void Handler::workerSolveAllSolutions() {
-    Chessboard chessboard(numberOfQueens);
-
     while (1) {
         MPI_Send(&WORK_REQUEST, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
         MPI_Recv(&taskDetails, 1, mpiTaskDetails, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
@@ -105,39 +90,44 @@ void Handler::workerSolveAllSolutions() {
 
         if (task == WORK_STANDBY) { break; }
 
-        int rootColumn = 0;
+        int i = taskDetails.columnPlacement;
 
-        if (taskDetails.columnPlacement != taskDetails.rowPlacement) {
-            chessboard.setState(0, taskDetails.columnPlacement);
-            chessboard.setState(1, taskDetails.rowPlacement);
-            rootColumn += 2;
-        } else {
-            chessboard.setState(0, taskDetails.columnPlacement);
-            rootColumn += 1;
+#pragma omp parallel for
+        for (int j = 0; j < numberOfQueens; j++) {
+            if (!subCheck(i, j)) {
+                int rootColumn = 0;
+
+                Chessboard chessboard(numberOfQueens);
+                chessboard.setState(0, taskDetails.columnPlacement);
+                chessboard.setState(1, j);
+                rootColumn += 2;
+
+                solver.solve(rootColumn - 1,
+                             j,
+                             numberOfQueens,
+                             rootColumn,
+                             chessboard,
+                             allSolutions,
+                             numberOfSolutions);
+            } else {
+                continue;
+            }
         }
-
-        solver.solve(rootColumn - 1,
-                     taskDetails.rowPlacement,
-                     numberOfQueens,
-                     rootColumn,
-                     chessboard,
-                     allSolutions,
-                     numberOfSolutions);
     }
 }
 
 
 void Handler::solveUniqueSolutions() {
-    int currentIndex = rankOfProcessor;
-    while ( currentIndex < numberOfSolutions ) {
+    int increment = numberOfProcessors + 1;
+    int startIndex = rankOfProcessor;
 
+#pragma omp for
+    for (int currentIndex = startIndex; currentIndex < numberOfSolutions; currentIndex += increment) {
         solver.UniqGB(currentIndex,
                       numberOfQueens,
                       allSolutions,
                       uniqueSolutions,
                       numberOfUniqueSolutions);
-
-        currentIndex += numberOfProcessors + 1;
     }
 };
 

@@ -12,6 +12,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <omp.h>
 #include "mpi.h"
 #include "Handler.hpp"
 
@@ -36,7 +37,9 @@ int main(int argc, char **argv) {
     bool   uniquePrintFlag = false;
     bool   uniqueGameFlag = false;
 
-    MPI_Init(&argc, &argv);
+    int required = MPI_THREAD_FUNNELED; // Required level of MPI threading support
+    int provided;                         // Provided level of MPI threading support
+    MPI_Init_thread(&argc, &argv, required, &provided);
     MPI_Comm_rank(MPI_COMM_WORLD, &prank);
     MPI_Comm_size(MPI_COMM_WORLD, &psize);
 
@@ -82,8 +85,7 @@ int main(int argc, char **argv) {
                0,
                MPI_COMM_WORLD);
 
-    if ( printFlag || gameFlag || uniqueFlag ) {
-
+    if (printFlag || gameFlag || uniqueFlag) {
         int localRecvCounts[psize];
         int globalRecvCounts[psize];
         int globalRecvDisplacements[psize];
@@ -104,7 +106,7 @@ int main(int argc, char **argv) {
                       MPI_COMM_WORLD);
 
         for (int i = 0; i < psize; ++i) {
-            if (i == 0 ) {
+            if (i == 0) {
                 globalRecvDisplacements[i] = 0;
             } else {
                 globalRecvDisplacements[i] = globalRecvDisplacements[i - 1] + globalRecvCounts[i - 1];
@@ -143,7 +145,10 @@ int main(int argc, char **argv) {
                 handler.rewriteVector(allSolutions);
             }
 
-            handler.solveUniqueSolutions();
+#pragma omp parallel
+            {
+                handler.solveUniqueSolutions();
+            }
 
             free(allSolutions[0]);
             free(allSolutions);
@@ -172,7 +177,7 @@ int main(int argc, char **argv) {
                           MPI_COMM_WORLD);
 
             for (int i = 0; i < psize; ++i) {
-                if (i == 0 ) {
+                if (i == 0) {
                     globalRecvDisplacements[i] = 0;
                 } else {
                     globalRecvDisplacements[i] = globalRecvDisplacements[i - 1] + globalRecvCounts[i - 1];
@@ -199,6 +204,7 @@ int main(int argc, char **argv) {
                 handler.numberOfUniqueSolutions = numberOfUniqueSolutions;
                 handler.rewriteUniqueVector(uniqueSolutions);
             }
+
             free(uniqueSolutions[0]);
             free(uniqueSolutions);
         } else {
@@ -207,7 +213,7 @@ int main(int argc, char **argv) {
         }
     }
 
-    if (prank == MASTER){
+    if (prank == MASTER) {
         handler.numberOfSolutions = numberOfSolutions;
         handler.numberOfUniqueSolutions = numberOfUniqueSolutions;
 
@@ -230,16 +236,14 @@ int main(int argc, char **argv) {
             }
         }
 
-        printf("Number of solutions = %i \n",(numberOfSolutions));
+        printf("Number of solutions = %i \n", (numberOfSolutions));
         if (uniqueFlag) {
-            printf("Number of unique solutions = %i \n",(numberOfUniqueSolutions));
+            printf("Number of unique solutions = %i \n", (numberOfUniqueSolutions));
         }
 
-        printf("Execution time = %f [s] \n",(MPI_Wtime()-t));
+        printf("Execution time = %f [s] \n", (MPI_Wtime() - t));
     }
 
-    MPI_Barrier(MPI_COMM_WORLD);
     MPI_Finalize();
-
     return 0;
 }
