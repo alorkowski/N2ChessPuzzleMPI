@@ -29,11 +29,9 @@ Handler::Handler(int n,
 
 Handler::~Handler() {
     if (allSolutionAllocated) {
-        free(allSolutionsArray[0]);
         free(allSolutionsArray);
     }
     if (uniqueSolutionAllocated) {
-        free(uniqueSolutionsArray[0]);
         free(uniqueSolutionsArray);
     }
 }
@@ -94,6 +92,52 @@ void Handler::masterSolveAllSolutions() {
 }
 
 
+void Handler::masterSolveAllSolutionsSparse() {
+    taskDetails.task = WORK_COUNT;
+    if (numberOfProcessors > numberOfQueens) {
+        for (int i = 0; i < ceil(numberOfQueens/2); i++) {
+            for (int j = 0; j < numberOfQueens; j++) {
+                if (!subCheck(i, j)) {
+
+                    if (i == ceil(numberOfQueens/2) - 1) {
+                        if (numberOfQueens % 2 != 0) {
+                            if (j >= ceil(numberOfQueens / 2)) {
+                                continue;
+                            }
+                        }
+                    }
+
+                    MPI_Recv(&msg, 1, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
+                    workerid = status.MPI_SOURCE;
+
+                    taskDetails.rowPlacement = j;
+                    taskDetails.columnPlacement = i;
+                    MPI_Send(&taskDetails, 1, mpiTaskDetails, workerid, 0, MPI_COMM_WORLD);
+                } else {
+                    continue;
+                }
+            }
+        }
+    } else {
+        for (int i = 0; i <= ceil(numberOfQueens/2); i++) {
+            MPI_Recv(&msg, 1, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
+            workerid = status.MPI_SOURCE;
+
+            taskDetails.columnPlacement = i;
+            taskDetails.rowPlacement = i;
+            MPI_Send(&taskDetails, 1, mpiTaskDetails, workerid, 0, MPI_COMM_WORLD);
+        }
+    }
+
+    for (int i = 1; i <= numberOfProcessors; i++) {
+        taskDetails.task = WORK_STANDBY;
+        MPI_Recv(&msg, 1, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
+        workerid = status.MPI_SOURCE;
+        MPI_Send(&taskDetails, 1, mpiTaskDetails, workerid, 0, MPI_COMM_WORLD);
+    }
+}
+
+
 void Handler::workerSolveAllSolutions() {
     Chessboard chessboard(numberOfQueens);
 
@@ -123,6 +167,39 @@ void Handler::workerSolveAllSolutions() {
                      chessboard,
                      allSolutions,
                      numberOfSolutions);
+    }
+}
+
+
+void Handler::workerSolveAllSolutionsSparse() {
+    Chessboard chessboard(numberOfQueens);
+
+    while (1) {
+        MPI_Send(&WORK_REQUEST, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
+        MPI_Recv(&taskDetails, 1, mpiTaskDetails, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+        task = taskDetails.task;
+
+        if (task == WORK_STANDBY) { break; }
+
+        int rootColumn = 0;
+
+        if (taskDetails.columnPlacement != taskDetails.rowPlacement) {
+            chessboard.setState(0, taskDetails.columnPlacement);
+            chessboard.setState(1, taskDetails.rowPlacement);
+            rootColumn += 2;
+        } else {
+            chessboard.setState(0, taskDetails.columnPlacement);
+            rootColumn += 1;
+        }
+
+        sparseSolver.solve(rootColumn - 1,
+                           taskDetails.rowPlacement,
+                           numberOfQueens,
+                           rootColumn,
+                           chessboard,
+                           allSolutions,
+                           numberOfSolutions);
     }
 }
 

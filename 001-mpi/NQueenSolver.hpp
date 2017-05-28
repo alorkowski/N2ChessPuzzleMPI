@@ -29,13 +29,13 @@ public:
      * \param solutions A vector containing all solved solutions.
      * \param count The current number of solutions found.
      */
-    void solve(int rootColumn,
-               int rootValue,
-               int numberOfQueens,
-               int col,
-               Chessboard &hist,
-               std::vector<Chessboard> &solutions,
-               int &count);
+    virtual void solve(int rootColumn,
+                       int rootValue,
+                       int numberOfQueens,
+                       int col,
+                       Chessboard &hist,
+                       std::vector<Chessboard> &solutions,
+                       int &count);
 
     int RotaGB(int i,
                int n,

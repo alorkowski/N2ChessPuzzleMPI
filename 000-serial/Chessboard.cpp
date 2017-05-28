@@ -1,4 +1,3 @@
-#include "Chessboard.hpp"
 #include <algorithm>
 #include <cstdlib>
 #include <string>
@@ -6,6 +5,7 @@
 #include <cassert>
 #include <cmath>
 #include <iostream>
+#include "Chessboard.hpp"
 
 Chessboard :: Chessboard(int size) {
     std::vector<int> state(size, 0);

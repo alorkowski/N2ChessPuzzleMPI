@@ -6,6 +6,7 @@
 #include <iostream>
 #include "Handler.hpp"
 #include "NQueenSolver.hpp"
+#include "SparseNQueenSolver.hpp"
 
 Handler::Handler(int n) : numberOfQueens(n) {}
 
@@ -20,6 +21,17 @@ void Handler::solveAllSolutions() {
     Chessboard chessboard(numberOfQueens);
     NQueenSolver solver = NQueenSolver();
     for (int i = 0; i < numberOfQueens; i++) {
+        chessboard.setState(0, i);
+        int col = 1;
+        solver.solve(col - 1, i, numberOfQueens, col, chessboard, allSolution, numberOfSolutions);
+    }
+}
+
+
+void Handler::solveAllSolutionsSparse() {
+    Chessboard chessboard(numberOfQueens);
+    SparseNQueenSolver solver = SparseNQueenSolver();
+    for (int i = 0; i <= ceil(numberOfQueens/2); i++) {
         chessboard.setState(0, i);
         int col = 1;
         solver.solve(col - 1, i, numberOfQueens, col, chessboard, allSolution, numberOfSolutions);

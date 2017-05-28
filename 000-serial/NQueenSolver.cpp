@@ -1,6 +1,7 @@
 #include <iostream>
 #include "NQueenSolver.hpp"
 
+// i is the row index and j is the column index
 #define conflict(i, j, col) (hist.getState().at(j) == i || abs(hist.getState().at(j) - i) == col - j)
 
 void NQueenSolver::solve(int rootColumn,

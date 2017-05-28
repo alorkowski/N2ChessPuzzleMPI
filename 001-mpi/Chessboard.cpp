@@ -56,5 +56,3 @@ void Chessboard::printGameBoard() {
         std::cout << std::endl;
     }
 }
-
-

@@ -33,6 +33,7 @@ int main(int argc, char **argv) {
     bool   printFlag = false;
     bool   gameFlag = false;
     bool   uniqueFlag = false;
+    bool   uniqueFastFlag = false;
     bool   uniquePrintFlag = false;
     bool   uniqueGameFlag = false;
 
@@ -56,6 +57,7 @@ int main(int argc, char **argv) {
             i++;
         }
         else if (strcmp(argv[i], "-u") == 0){ uniqueFlag = true; }
+        else if (strcmp(argv[i], "-uf") == 0){ uniqueFastFlag = true; uniqueFlag = true;}
         else if (strcmp(argv[i], "-p") == 0){ printFlag = true; }
         else if (strcmp(argv[i], "-g") == 0){ gameFlag = true; }
         else if (strcmp(argv[i], "-up") == 0){ uniquePrintFlag = true; }
@@ -65,13 +67,22 @@ int main(int argc, char **argv) {
     if (numberOfQueens == 0){ numberOfQueens = 4; }
 
     Handler handler(numberOfQueens, prank, psize);
+
     int numberOfSolutions;
     int numberOfUniqueSolutions;
 
     if (prank == MASTER) {
-        handler.masterSolveAllSolutions();
+        if(!uniqueFastFlag) {
+            handler.masterSolveAllSolutions();
+        } else {
+            handler.masterSolveAllSolutionsSparse();
+        }
     } else {
-        handler.workerSolveAllSolutions();
+        if(!uniqueFastFlag) {
+            handler.workerSolveAllSolutions();
+        } else {
+            handler.workerSolveAllSolutionsSparse();
+        }
     }
 
     MPI_Reduce(&handler.numberOfSolutions,
@@ -145,7 +156,6 @@ int main(int argc, char **argv) {
 
             handler.solveUniqueSolutions();
 
-            free(allSolutions[0]);
             free(allSolutions);
 
             MPI_Reduce(&handler.numberOfUniqueSolutions,
@@ -199,15 +209,13 @@ int main(int argc, char **argv) {
                 handler.numberOfUniqueSolutions = numberOfUniqueSolutions;
                 handler.rewriteUniqueVector(uniqueSolutions);
             }
-            free(uniqueSolutions[0]);
             free(uniqueSolutions);
         } else {
-            free(allSolutions[0]);
             free(allSolutions);
         }
     }
 
-    if (prank == MASTER){
+    if (prank == MASTER) {
         handler.numberOfSolutions = numberOfSolutions;
         handler.numberOfUniqueSolutions = numberOfUniqueSolutions;
 
@@ -230,7 +238,11 @@ int main(int argc, char **argv) {
             }
         }
 
-        printf("Number of solutions = %i \n",(numberOfSolutions));
+        if(!uniqueFastFlag) {
+            printf("Number of solutions = %i \n", (numberOfSolutions));
+        } else {
+            printf("Number of solutions = %i \n", (2 * numberOfSolutions));
+        }
         if (uniqueFlag) {
             printf("Number of unique solutions = %i \n",(numberOfUniqueSolutions));
         }

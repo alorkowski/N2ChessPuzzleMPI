@@ -1,6 +1,7 @@
 #ifndef HANDLER_HPP_
 #define HANDLER_HPP_
 
+#include <math.h>
 #include "Chessboard.hpp"
 
 class Handler {
@@ -11,6 +12,7 @@ public:
     virtual ~Handler();
 
     void solveAllSolutions();
+    void solveAllSolutionsSparse();
     void printSolutions();
     void printGameBoards();
     void writeSolutions();

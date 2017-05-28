@@ -12,13 +12,13 @@
 class NQueenSolver {
 public:
 
-    void solve(int rootColumn,
-               int rootValue,
-               int numberOfQueens,
-               int col,
-               Chessboard &hist,
-               std::vector<Chessboard> &solutions,
-               int &count);
+    virtual void solve(int rootColumn,
+                       int rootValue,
+                       int numberOfQueens,
+                       int col,
+                       Chessboard &hist,
+                       std::vector<Chessboard> &solutions,
+                       int &count);
 
     int RotaGB(int i,
                int n,

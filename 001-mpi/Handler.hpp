@@ -22,6 +22,7 @@
 #include "mpi.h"
 #include "Chessboard.hpp"
 #include "NQueenSolver.hpp"
+#include "SparseNQueenSolver.hpp"
 
 class Handler {
 public:
@@ -44,9 +45,17 @@ public:
      */
     void masterSolveAllSolutions();
 
+    /*! A method to solve for some of the possible solutions specific to processor Rank 0.
+     */
+    void masterSolveAllSolutionsSparse();
+
     /*! A method to solve for all possible solutions specific to any processor not Rank 0.
      */
     void workerSolveAllSolutions();
+
+    /*! A method to solve for some of the possible solutions specific to any processor not Rank 0.
+     */
+    void workerSolveAllSolutionsSparse();
 
     /*! A method to solve for all unique solutions.
      */
@@ -86,9 +95,7 @@ public:
     int** allSolutionsArray;
     int** uniqueSolutionsArray;
 
-private:
-
-    NQueenSolver solver;
+protected:
 
     const int WORK_REQUEST = -1;
     const int WORK_COMPLETE = -2;
@@ -129,6 +136,10 @@ private:
 
     bool allSolutionAllocated = false;
     bool uniqueSolutionAllocated = false;
+
+private:
+    NQueenSolver solver;
+    SparseNQueenSolver sparseSolver;
 
 };
 

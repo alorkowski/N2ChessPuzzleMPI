@@ -6,6 +6,7 @@ CXXOMPFLAGS += -std=c++11 -Wall -O2 -fopenmp
 SERIAL_SRC = 000-serial/*.cpp
 MPI_SRC = 001-mpi/*.cpp
 MPMPI_SRC = 002-mpmpi/*.cpp
+FAST_SERIAL_SRC = 003-fastSerial/*.cpp
 
 all: serial mpi mpmpi
 
