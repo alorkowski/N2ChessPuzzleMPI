@@ -28,11 +28,11 @@ void SparseNQueenSolver::solve(int rootColumn,
         }
         if (rootColumn == 0) {
             if (numberOfQueens % 2 != 0) {
-                int halfBoardLength = ceil(numberOfQueens/2);
+                int halfBoardLength = floor(numberOfQueens/2);
                 if (hist.getState().at(rootColumn) == halfBoardLength) {
                     if (j == rootColumn + 1) {
                         if (k >= ceil(numberOfQueens / 2)) {
-                            break;
+                            continue;
                         }
                     }
                 }

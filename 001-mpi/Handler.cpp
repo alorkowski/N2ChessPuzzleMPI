@@ -99,7 +99,7 @@ void Handler::masterSolveAllSolutionsSparse() {
             for (int j = 0; j < numberOfQueens; j++) {
                 if (!subCheck(i, j)) {
 
-                    if (i == ceil(numberOfQueens/2) - 1) {
+                    if (i == floor(numberOfQueens/2)) {
                         if (numberOfQueens % 2 != 0) {
                             if (j >= ceil(numberOfQueens / 2)) {
                                 continue;
@@ -119,7 +119,7 @@ void Handler::masterSolveAllSolutionsSparse() {
             }
         }
     } else {
-        for (int i = 0; i <= ceil(numberOfQueens/2); i++) {
+        for (int i = 0; i < ceil((float) numberOfQueens/2); i++) {
             MPI_Recv(&msg, 1, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
             workerid = status.MPI_SOURCE;
 

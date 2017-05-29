@@ -31,7 +31,7 @@ void Handler::solveAllSolutions() {
 void Handler::solveAllSolutionsSparse() {
     Chessboard chessboard(numberOfQueens);
     SparseNQueenSolver solver = SparseNQueenSolver();
-    for (int i = 0; i <= ceil(numberOfQueens/2); i++) {
+    for (int i = 0; i < ceil((float) numberOfQueens/2); i++) {
         chessboard.setState(0, i);
         int col = 1;
         solver.solve(col - 1, i, numberOfQueens, col, chessboard, allSolution, numberOfSolutions);
