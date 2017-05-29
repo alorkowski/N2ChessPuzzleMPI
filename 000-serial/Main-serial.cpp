@@ -7,12 +7,13 @@
 
 int main(int argc, char **argv) {
     int    numberOfQueens = 0;
+    bool   fastFlag = false;
     bool   printFlag = false;
     bool   gameFlag = false;
     bool   writeFlag = false;
     bool   writeGBFlag = false;
     bool   uniqueFlag = false;
-    bool   uniqueFastFlag = false;
+    bool   fastUniqueFlag = false;
     bool   uniquePrintFlag = false;
     bool   uniqueGameFlag = false;
 
@@ -23,8 +24,9 @@ int main(int argc, char **argv) {
             numberOfQueens = atoi( argv[i+1] );
             i++;
         }
+        else if (strcmp(argv[i], "-f") == 0){ fastFlag = true;}
         else if (strcmp(argv[i], "-u") == 0){ uniqueFlag = true; }
-        else if (strcmp(argv[i], "-uf") == 0){ uniqueFastFlag = true; uniqueFlag = true;}
+        else if (strcmp(argv[i], "-uf") == 0){ fastUniqueFlag = true; uniqueFlag = true;}
         else if (strcmp(argv[i], "-p") == 0){ printFlag = true; }
         else if (strcmp(argv[i], "-g") == 0){ gameFlag = true; }
         else if (strcmp(argv[i], "-w") == 0){ writeFlag = true; }
@@ -38,10 +40,14 @@ int main(int argc, char **argv) {
 
     Handler handler(numberOfQueens);
 
-    if(!uniqueFastFlag) {
+    if(!fastFlag && !fastUniqueFlag) {
         handler.solveAllSolutions();
     } else {
         handler.solveAllSolutionsSparse();
+    }
+
+    if(fastFlag) {
+         handler.reconstructSparseToDense();
     }
 
     if (uniqueFlag) { handler.solveUniqueSolutions(); }
@@ -66,10 +72,14 @@ int main(int argc, char **argv) {
         }
     }
 
-    if (!uniqueFastFlag) {
+    if (!fastUniqueFlag) {
         printf("Number of solutions = %i \n", (handler.numberOfSolutions));
     } else {
-        printf("Number of solutions = %i \n", (2*handler.numberOfSolutions));
+        if (fastFlag) {
+            printf("Number of solutions = %i \n", (handler.numberOfSolutions));
+        } else {
+            printf("Number of solutions = %i \n", (2 * handler.numberOfSolutions));
+        }
     }
 
     if (uniqueFlag) {

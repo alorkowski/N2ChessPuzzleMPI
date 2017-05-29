@@ -13,6 +13,7 @@ public:
 
     void solveAllSolutions();
     void solveAllSolutionsSparse();
+    void reconstructSparseToDense();
     void printSolutions();
     void printGameBoards();
     void writeSolutions();

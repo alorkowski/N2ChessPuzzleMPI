@@ -45,3 +45,17 @@ void SparseNQueenSolver::solve(int rootColumn,
         solve(rootColumn, rootValue, numberOfQueens, col + 1, hist, solutions, count);
     }
 }
+
+
+void SparseNQueenSolver::reconstructSparseToDense(int i,
+                                                  int numberOfQueens,
+                                                  std::vector<Chessboard> &mat,
+                                                  int &count) {
+    Chessboard matM(numberOfQueens);
+
+    // Reflection of the original Game Board.
+    for (int r = 0; r < numberOfQueens ; r++){matM.setState(r, MirrorGB(r, numberOfQueens, mat.at(i)));}
+
+    mat.push_back(matM);
+    count++;
+}

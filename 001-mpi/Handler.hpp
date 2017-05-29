@@ -57,6 +57,10 @@ public:
      */
     void workerSolveAllSolutionsSparse();
 
+    /*! A method to find all solutions some a set of partial solutions.
+    */
+    void reconstructSparseToDense();
+
     /*! A method to solve for all unique solutions.
      */
     void solveUniqueSolutions();

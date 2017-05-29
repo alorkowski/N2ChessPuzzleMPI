@@ -22,6 +22,11 @@ public:
                std::vector<Chessboard> &solutions,
                int &count);
 
+    void reconstructSparseToDense(int i,
+                                  int numberOfQueens,
+                                  std::vector<Chessboard> &mat,
+                                  int &count);
+
 private:
 
 };

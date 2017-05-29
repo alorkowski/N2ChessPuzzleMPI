@@ -219,6 +219,15 @@ void Handler::solveUniqueSolutions() {
 };
 
 
+void Handler::reconstructSparseToDense() {
+    SparseNQueenSolver solver;
+    int maxIterationCount = allSolutions.size();
+    for (int i = 0; i < maxIterationCount; i++) {
+        solver.reconstructSparseToDense(i, numberOfQueens, allSolutions, numberOfSolutions);
+    }
+}
+
+
 void Handler::convertAllSolutionVectorToArray() {
 
     allSolutionsArray = allocate2DInt(numberOfSolutions, numberOfQueens);

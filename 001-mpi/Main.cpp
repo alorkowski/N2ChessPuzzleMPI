@@ -30,10 +30,11 @@ int** allocate2DInt(int rows, int cols) {
 int main(int argc, char **argv) {
     int    prank, psize;
     int    numberOfQueens = 0;
+    bool   fastFlag = false;
     bool   printFlag = false;
     bool   gameFlag = false;
     bool   uniqueFlag = false;
-    bool   uniqueFastFlag = false;
+    bool   fastUniqueFlag = false;
     bool   uniquePrintFlag = false;
     bool   uniqueGameFlag = false;
 
@@ -56,8 +57,9 @@ int main(int argc, char **argv) {
             numberOfQueens = atoi( argv[i+1] );
             i++;
         }
+        else if (strcmp(argv[i], "-f") == 0){ fastFlag = true;}
         else if (strcmp(argv[i], "-u") == 0){ uniqueFlag = true; }
-        else if (strcmp(argv[i], "-uf") == 0){ uniqueFastFlag = true; uniqueFlag = true;}
+        else if (strcmp(argv[i], "-uf") == 0){ fastUniqueFlag = true; uniqueFlag = true;}
         else if (strcmp(argv[i], "-p") == 0){ printFlag = true; }
         else if (strcmp(argv[i], "-g") == 0){ gameFlag = true; }
         else if (strcmp(argv[i], "-up") == 0){ uniquePrintFlag = true; }
@@ -72,16 +74,19 @@ int main(int argc, char **argv) {
     int numberOfUniqueSolutions;
 
     if (prank == MASTER) {
-        if(!uniqueFastFlag) {
+        if(!fastFlag && !fastUniqueFlag) {
             handler.masterSolveAllSolutions();
         } else {
             handler.masterSolveAllSolutionsSparse();
         }
     } else {
-        if(!uniqueFastFlag) {
+        if(!fastFlag && !fastUniqueFlag) {
             handler.workerSolveAllSolutions();
         } else {
             handler.workerSolveAllSolutionsSparse();
+            if (fastFlag) {
+                handler.reconstructSparseToDense();
+            }
         }
     }
 
@@ -238,13 +243,18 @@ int main(int argc, char **argv) {
             }
         }
 
-        if(!uniqueFastFlag) {
-            printf("Number of solutions = %i \n", (numberOfSolutions));
+        if (!fastUniqueFlag) {
+            printf("Number of solutions = %i \n", (handler.numberOfSolutions));
         } else {
-            printf("Number of solutions = %i \n", (2 * numberOfSolutions));
+            if (fastFlag) {
+                printf("Number of solutions = %i \n", (handler.numberOfSolutions));
+            } else {
+                printf("Number of solutions = %i \n", (2 * handler.numberOfSolutions));
+            }
         }
+
         if (uniqueFlag) {
-            printf("Number of unique solutions = %i \n",(numberOfUniqueSolutions));
+            printf("Number of unique solutions = %i \n",(handler.numberOfUniqueSolutions));
         }
 
         printf("Execution time = %f [s] \n",(MPI_Wtime()-t));

@@ -19,7 +19,7 @@ bool Handler::subcheck(int i, int j) {
 
 void Handler::solveAllSolutions() {
     Chessboard chessboard(numberOfQueens);
-    NQueenSolver solver = NQueenSolver();
+    NQueenSolver solver;
     for (int i = 0; i < numberOfQueens; i++) {
         chessboard.setState(0, i);
         int col = 1;
@@ -30,7 +30,7 @@ void Handler::solveAllSolutions() {
 
 void Handler::solveAllSolutionsSparse() {
     Chessboard chessboard(numberOfQueens);
-    SparseNQueenSolver solver = SparseNQueenSolver();
+    SparseNQueenSolver solver;
     for (int i = 0; i < ceil((float) numberOfQueens/2); i++) {
         chessboard.setState(0, i);
         int col = 1;
@@ -40,9 +40,18 @@ void Handler::solveAllSolutionsSparse() {
 
 
 void Handler::solveUniqueSolutions() {
-    NQueenSolver solver = NQueenSolver();
+    NQueenSolver solver;
     for (int i = 0; i < numberOfSolutions; i++) {
         solver.UniqGB(i, numberOfQueens, allSolution, uniqueSolution, numberOfUniqueSolutions);
+    }
+}
+
+
+void Handler::reconstructSparseToDense() {
+    SparseNQueenSolver solver;
+    int maxIterationCount = allSolution.size();
+    for (int i = 0; i < maxIterationCount; i++) {
+        solver.reconstructSparseToDense(i, numberOfQueens, allSolution, numberOfSolutions);
     }
 }
 
