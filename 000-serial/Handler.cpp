@@ -2,11 +2,8 @@
 // Created by Alexander Lorkowski on 5/2/17.
 //
 
-#include <cstdlib>
-#include <iostream>
+
 #include "Handler.hpp"
-#include "NQueenSolver.hpp"
-#include "SparseNQueenSolver.hpp"
 
 Handler::Handler(int n) : numberOfQueens(n) {}
 
@@ -59,7 +56,7 @@ void Handler::reconstructSparseToDense() {
 }
 
 
-void Handler::printSolutions() {
+void Handler::printAllSolutions() {
     std::cout << std::endl << "Printing solutions as arrays" << std::endl;
     for (int i = 0; i < numberOfSolutions; i++) {
         allSolutions.at(i).print();
@@ -68,7 +65,7 @@ void Handler::printSolutions() {
 }
 
 
-void Handler::printGameBoards() {
+void Handler::printAllGameBoards() {
     for (int i = 0; i < numberOfSolutions; i++) {
         std::cout << std::endl << "No. " << (i + 1) << std::endl << "**************" << std::endl;
         allSolutions.at(i).printGameBoard();
@@ -95,15 +92,89 @@ void Handler::printUniqueGameBoards() {
 }
 
 
-void Handler::writeSolutions() {
+void Handler::writeAllSolutions() {
+    time_t t = time(0);
+    struct tm * now = localtime( & t );
+
+    std::stringstream ss;
+    ss << (now->tm_year + 1900)
+       << (now->tm_mon + 1)
+       << (now->tm_mday)  << '-'
+       << (now->tm_hour)
+       << (now->tm_min)
+       << (now->tm_sec);
+
+    std::ofstream outputFile;
+    outputFile.open("array-NQueen-" + std::to_string(numberOfQueens) + "-" + ss.str() + ".dat");
+    std::cout << "Printing solutions as arrays" << std::endl;
     for (int i = 0; i < numberOfSolutions; i++) {
-        // TODO: write solutions here
+        allSolutions.at(i).write(outputFile);
     }
+    outputFile.close();
 }
 
 
-void Handler::writeGameBoards() {
+void Handler::writeAllGameBoards() {
+    time_t t = time(0);
+    struct tm * now = localtime( & t );
+
+    std::stringstream ss;
+    ss << (now->tm_year + 1900)
+       << (now->tm_mon + 1)
+       << (now->tm_mday)  << '-'
+       << (now->tm_hour)
+       << (now->tm_min)
+       << (now->tm_sec);
+
+    std::ofstream outputFile;
+    outputFile.open("gb-NQueen-" + std::to_string(numberOfQueens) + "-" + ss.str() + ".dat");
     for (int i = 0; i < numberOfSolutions; i++) {
-        // TODO: write solutions here in game board format
+        outputFile << std::endl << "No. " << (i + 1) << std::endl << "**************" << std::endl;
+        allSolutions.at(i).writeGameBoard(outputFile);
     }
+    outputFile.close();
+}
+
+
+void Handler::writeUniqueSolutions() {
+    time_t t = time(0);
+    struct tm * now = localtime( & t );
+
+    std::stringstream ss;
+    ss << (now->tm_year + 1900)
+       << (now->tm_mon + 1)
+       << (now->tm_mday)  << '-'
+       << (now->tm_hour)
+       << (now->tm_min)
+       << (now->tm_sec);
+
+    std::ofstream outputFile;
+    outputFile.open("array-NQueen-" + std::to_string(numberOfQueens) + "-" + ss.str() + ".dat");
+    std::cout << "Printing solutions as arrays" << std::endl;
+    for (int i = 0; i < numberOfSolutions; i++) {
+        allSolutions.at(i).write(outputFile);
+    }
+    outputFile.close();
+}
+
+
+void Handler::writeUniqueGameBoards() {
+    time_t t = time(0);
+    struct tm * now = localtime( & t );
+
+    std::stringstream ss;
+    ss << (now->tm_year + 1900)
+       << (now->tm_mon + 1)
+       << (now->tm_mday)  << '-'
+       << (now->tm_hour)
+       << (now->tm_min)
+       << (now->tm_sec);
+
+    std::ofstream outputFile;
+    outputFile.open("gb-NQueen-" + std::to_string(numberOfQueens) + "-" + ss.str() + ".dat");
+    for (int i = 0; i < numberOfSolutions; i++) {
+        outputFile << std::endl << "No. " << (i + 1) << std::endl << "**************" << std::endl;
+        allSolutions.at(i).writeGameBoard(outputFile);
+    }
+    outputFile.close();
 }

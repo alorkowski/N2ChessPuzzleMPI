@@ -12,7 +12,14 @@
 #define HANDLER_HPP_
 
 #include <math.h>
+#include <fstream>
+#include <cstdlib>
+#include <iostream>
+#include <string>
+#include <sstream>
 #include "Chessboard.hpp"
+#include "NQueenSolver.hpp"
+#include "SparseNQueenSolver.hpp"
 
 class Handler {
 public:
@@ -41,11 +48,11 @@ public:
 
     /*! A method to print all solutions.
      */
-    void printSolutions();
+    void printAllSolutions();
 
     /*! A method to print all solutions in a traditional chessboard format.
      */
-    void printGameBoards();
+    void printAllGameBoards();
 
     /*! A method to solve for all unique solutions.
      */
@@ -59,9 +66,21 @@ public:
      */
     void printUniqueGameBoards();
 
+    /*! A method to write all solutions in array format.
+     */
+    void writeAllSolutions();
 
-    void writeSolutions();
-    void writeGameBoards();
+    /*! A method to write all solutions in a traditional chessboard format.
+     */
+    void writeAllGameBoards();
+
+    /*! A method to write all unique solutions in array format.
+     */
+    void writeUniqueSolutions();
+
+    /*! A method to write all unique solutions in a traditional chessboard format.
+     */
+    void writeUniqueGameBoards();
 
     /*! An integer recording the total number of solutions.
      */

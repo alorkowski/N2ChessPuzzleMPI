@@ -14,6 +14,7 @@
 #include <vector>
 #include <stdint.h>
 #include <string>
+#include <fstream>
 #include <algorithm>
 #include <cstdlib>
 #include <sstream>
@@ -59,6 +60,18 @@ public:
     /*! A method to print the current state of the Chessboard object in a traditional chessboard format.
      */
 	void printGameBoard();
+
+	/*! A method to write the current state of the Chessboard object to a file.
+	 *
+	 * @param outputFile The file to write out to.
+	 */
+	void write(std::ofstream &outputFile);
+
+	/*! A method to write the current state of the Chessboard object in a traditional chessboard format to a file.
+	 *
+	 * @param outputFile The file to write out to.
+	 */
+	void writeGameBoard(std::ofstream &outputFile);
 
 private:
     /*! A vector containing the current state of the Chessboard object.

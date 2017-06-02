@@ -16,19 +16,24 @@ Chessboard :: Chessboard(int size) {
     this->state = state;
 }
 
+
 Chessboard::~Chessboard() {}
+
 
 size_t Chessboard::getSize() const {
 	return state.size();
 }
 
+
 void Chessboard::setState(int index, int position) {
     state[index] = position;
 }
 
+
 std::vector<int> Chessboard::getState() {
 	return state;
 }
+
 
 void Chessboard::print() {
     for (int i = 0; i < getSize(); i++) {
@@ -36,6 +41,7 @@ void Chessboard::print() {
     }
     std::cout << std::endl;
 }
+
 
 void Chessboard::printGameBoard() {
     for (int i = 0; i < getSize(); i++){
@@ -47,5 +53,27 @@ void Chessboard::printGameBoard() {
             }
         }
         std::cout << std::endl;
+    }
+}
+
+
+void Chessboard::write(std::ofstream &outputFile) {
+    for (int i = 0; i < getSize(); i++) {
+        outputFile << getState().at(i) << ' ';
+    }
+    outputFile << std::endl;
+}
+
+
+void Chessboard::writeGameBoard(std::ofstream &outputFile) {
+    for (int i = 0; i < getSize(); i++){
+        for (int j = 0; j < getSize(); j++){
+            if (j == state.at(i)) {
+                outputFile << "Q";
+            } else {
+                outputFile << "#";
+            }
+        }
+        outputFile << std::endl;
     }
 }

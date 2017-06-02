@@ -62,10 +62,10 @@ int main(int argc, char **argv) {
     }
 
     if (uniqueFlag) { handler.solveUniqueSolutions(); }
-    if (printFlag) { handler.printSolutions(); }
-    if (gameFlag) { handler.printGameBoards(); }
-    if (writeFlag) { handler.writeSolutions(); }
-    if (writeGBFlag) { handler.writeGameBoards(); }
+    if (printFlag) { handler.printAllSolutions(); }
+    if (gameFlag) { handler.printAllGameBoards(); }
+    if (writeFlag) { handler.writeAllSolutions(); }
+    if (writeGBFlag) { handler.writeAllGameBoards(); }
     if (uniquePrintFlag) {
         if (!uniqueFlag) {
             std::cout << "Warning: Program not set to solve for unique solutions.  Please run with -u."
