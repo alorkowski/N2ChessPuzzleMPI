@@ -24,25 +24,16 @@ Handler::Handler(int n,
 
     MPI_Type_create_struct(nItems, blockLengths, mpiOffsets, mpiTypes, &mpiTaskDetails);
     MPI_Type_commit(&mpiTaskDetails);
-
-    omp_init_lock(&lock);
 }
 
 
 Handler::~Handler() {
-
-    MPI_Type_free(&mpiTaskDetails);
-
     if (allSolutionAllocated) {
-        free(allSolutionsArray[0]);
         free(allSolutionsArray);
     }
     if (uniqueSolutionAllocated) {
-        free(uniqueSolutionsArray[0]);
         free(uniqueSolutionsArray);
     }
-
-    omp_destroy_lock(&lock);
 }
 
 
@@ -62,77 +53,55 @@ bool Handler::subCheck(int i, int j) {
 }
 
 
-void Handler::masterSolveAllSolutions() {
-    taskDetails.task = WORK_COUNT;
-
-#pragma omp parallel for
-    for (int i = 0; i < numberOfQueens; i++) {
-        MPI_Recv(&msg, 1, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
-        workerid = status.MPI_SOURCE;
-
-        taskDetails.columnPlacement = i;
-        MPI_Send(&taskDetails, 1, mpiTaskDetails, workerid, 0, MPI_COMM_WORLD);
-    }
-
-#pragma omp parallel for
-    for (int i = 1; i <= numberOfProcessors; i++) {
-        taskDetails.task = WORK_STANDBY;
-        MPI_Recv(&msg, 1, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
-        workerid = status.MPI_SOURCE;
-        MPI_Send(&taskDetails, 1, mpiTaskDetails, workerid, 0, MPI_COMM_WORLD);
-    }
+void Handler::solveAllSolutions(Chessboard chessboard,
+                                int rootColumn,
+                                int rowPlacement) {
+    solver.solve(rootColumn - 1,
+                 rowPlacement,
+                 numberOfQueens,
+                 rootColumn,
+                 chessboard,
+                 allSolutions,
+                 numberOfSolutions);
 }
 
 
-void Handler::workerSolveAllSolutions() {
-    while (1) {
-        MPI_Send(&WORK_REQUEST, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
-        MPI_Recv(&taskDetails, 1, mpiTaskDetails, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+void Handler::solveAllSolutionsSparse(Chessboard chessboard,
+                                      int rootColumn,
+                                      int rowPlacement) {
 
-        task = taskDetails.task;
-
-        if (task == WORK_STANDBY) { break; }
-
-        int i = taskDetails.columnPlacement;
-
-#pragma omp parallel for
-        for (int j = 0; j < numberOfQueens; j++) {
-            if (!subCheck(i, j)) {
-                int rootColumn = 0;
-
-                Chessboard chessboard(numberOfQueens);
-                chessboard.setState(0, taskDetails.columnPlacement);
-                chessboard.setState(1, j);
-                rootColumn += 2;
-
-                solver.solve(rootColumn - 1,
-                             j,
-                             numberOfQueens,
-                             rootColumn,
-                             chessboard,
-                             allSolutions,
-                             numberOfSolutions);
-            } else {
-                continue;
-            }
-        }
-    }
+    sparseSolver.solve(rootColumn - 1,
+                       rowPlacement,
+                       numberOfQueens,
+                       rootColumn,
+                       chessboard,
+                       allSolutions,
+                       numberOfSolutions);
 }
 
 
 void Handler::solveUniqueSolutions() {
-    int increment = numberOfProcessors + 1;
-    int startIndex = rankOfProcessor;
+    int currentIndex = rankOfProcessor;
+    while ( currentIndex < numberOfSolutions ) {
 
-#pragma omp parallel for
-    for (int currentIndex = startIndex; currentIndex < numberOfSolutions; currentIndex += increment) {
         solver.UniqGB(currentIndex,
                       numberOfQueens,
                       allSolutions,
                       uniqueSolutions,
                       numberOfUniqueSolutions);
+
+        currentIndex += numberOfProcessors + 1;
     }
-};
+}
+
+
+void Handler::reconstructSparseToDense() {
+    SparseNQueenSolver solver;
+    int maxIterationCount = allSolutions.size();
+    for (int i = 0; i < maxIterationCount; i++) {
+        solver.reconstructSparseToDense(i, numberOfQueens, allSolutions, numberOfSolutions);
+    }
+}
 
 
 void Handler::convertAllSolutionVectorToArray() {

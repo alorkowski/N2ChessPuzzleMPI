@@ -12,11 +12,15 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <omp.h>
 #include "mpi.h"
 #include "Handler.hpp"
 
 #define MASTER 0
+
+bool subCheck(int i, int j) {
+    if (j == i || abs(j - i) == 1){ return true; }
+    else { return false; }
+}
 
 int** allocate2DInt(int rows, int cols) {
     int *data = (int *)malloc(rows*cols*sizeof(int));
@@ -31,15 +35,15 @@ int** allocate2DInt(int rows, int cols) {
 int main(int argc, char **argv) {
     int    prank, psize;
     int    numberOfQueens = 0;
+    bool   fastFlag = false;
     bool   printFlag = false;
     bool   gameFlag = false;
     bool   uniqueFlag = false;
+    bool   fastUniqueFlag = false;
     bool   uniquePrintFlag = false;
     bool   uniqueGameFlag = false;
 
-    int required = MPI_THREAD_FUNNELED; // Required level of MPI threading support
-    int provided;                         // Provided level of MPI threading support
-    MPI_Init_thread(&argc, &argv, required, &provided);
+    MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &prank);
     MPI_Comm_size(MPI_COMM_WORLD, &psize);
 
@@ -58,23 +62,75 @@ int main(int argc, char **argv) {
             numberOfQueens = atoi( argv[i+1] );
             i++;
         }
+        else if (strcmp(argv[i], "-f") == 0){ fastFlag = true;}
         else if (strcmp(argv[i], "-u") == 0){ uniqueFlag = true; }
+        else if (strcmp(argv[i], "-uf") == 0){ fastUniqueFlag = true; uniqueFlag = true;}
         else if (strcmp(argv[i], "-p") == 0){ printFlag = true; }
         else if (strcmp(argv[i], "-g") == 0){ gameFlag = true; }
         else if (strcmp(argv[i], "-up") == 0){ uniquePrintFlag = true; }
         else if (strcmp(argv[i], "-ug") == 0){ uniqueGameFlag = true; }
         else {}
     }
+
     if (numberOfQueens == 0){ numberOfQueens = 4; }
 
     Handler handler(numberOfQueens, prank, psize);
+
     int numberOfSolutions;
     int numberOfUniqueSolutions;
 
-    if (prank == MASTER) {
-        handler.masterSolveAllSolutions();
+    std::vector<Chessboard> initialState;
+    std::vector<int> rootColumnVector;
+    std::vector<int> lastPlacementVector;
+
+    int numberOfRow1Queens = numberOfQueens;
+
+    if (fastFlag || fastUniqueFlag) {
+        numberOfRow1Queens = ceil((double) numberOfQueens/2);
+    }
+
+    if (psize > numberOfQueens) {
+        for (int i = 0; i < numberOfRow1Queens; i++) {
+            for (int j = 0; j < numberOfQueens; j++) {
+                if (!subCheck(i, j)) {
+                    if (i == floor(numberOfQueens/2)) {
+                        if (numberOfQueens % 2 != 0) {
+                            if (j >= ceil(numberOfQueens / 2)) {
+                                continue;
+                            }
+                        }
+                    }
+                    Chessboard chessboard(numberOfQueens);
+                    chessboard.setState(0, i);
+                    chessboard.setState(1, j);
+                    initialState.push_back(chessboard);
+                    rootColumnVector.push_back(2);
+                    lastPlacementVector.push_back(j);
+                }
+            }
+        }
     } else {
-        handler.workerSolveAllSolutions();
+        for (int i = 0; i < numberOfRow1Queens; i++) {
+            Chessboard chessboard(numberOfQueens);
+            chessboard.setState(0, i);
+            initialState.push_back(chessboard);
+            rootColumnVector.push_back(1);
+            lastPlacementVector.push_back(i);
+        }
+    }
+
+    int numberOfInitialStates = initialState.size();
+
+    for (int i = prank; i < numberOfInitialStates; i += psize) {
+        if(!fastFlag && !fastUniqueFlag) {
+            handler.solveAllSolutions(initialState.at(i), rootColumnVector.at(i), lastPlacementVector.at(i));
+        } else {
+            handler.solveAllSolutionsSparse(initialState.at(i), rootColumnVector.at(i), lastPlacementVector.at(i));
+        }
+    }
+
+    if (fastFlag) {
+        handler.reconstructSparseToDense();
     }
 
     MPI_Reduce(&handler.numberOfSolutions,
@@ -85,7 +141,8 @@ int main(int argc, char **argv) {
                0,
                MPI_COMM_WORLD);
 
-    if (printFlag || gameFlag || uniqueFlag) {
+    if ( printFlag || gameFlag || uniqueFlag ) {
+
         int localRecvCounts[psize];
         int globalRecvCounts[psize];
         int globalRecvDisplacements[psize];
@@ -106,7 +163,7 @@ int main(int argc, char **argv) {
                       MPI_COMM_WORLD);
 
         for (int i = 0; i < psize; ++i) {
-            if (i == 0) {
+            if (i == 0 ) {
                 globalRecvDisplacements[i] = 0;
             } else {
                 globalRecvDisplacements[i] = globalRecvDisplacements[i - 1] + globalRecvCounts[i - 1];
@@ -147,7 +204,6 @@ int main(int argc, char **argv) {
 
             handler.solveUniqueSolutions();
 
-            free(allSolutions[0]);
             free(allSolutions);
 
             MPI_Reduce(&handler.numberOfUniqueSolutions,
@@ -174,7 +230,7 @@ int main(int argc, char **argv) {
                           MPI_COMM_WORLD);
 
             for (int i = 0; i < psize; ++i) {
-                if (i == 0) {
+                if (i == 0 ) {
                     globalRecvDisplacements[i] = 0;
                 } else {
                     globalRecvDisplacements[i] = globalRecvDisplacements[i - 1] + globalRecvCounts[i - 1];
@@ -201,11 +257,8 @@ int main(int argc, char **argv) {
                 handler.numberOfUniqueSolutions = numberOfUniqueSolutions;
                 handler.rewriteUniqueVector(uniqueSolutions);
             }
-
-            free(uniqueSolutions[0]);
             free(uniqueSolutions);
         } else {
-            free(allSolutions[0]);
             free(allSolutions);
         }
     }
@@ -233,14 +286,25 @@ int main(int argc, char **argv) {
             }
         }
 
-        printf("Number of solutions = %i \n", (numberOfSolutions));
-        if (uniqueFlag) {
-            printf("Number of unique solutions = %i \n", (numberOfUniqueSolutions));
+        if (!fastUniqueFlag) {
+            printf("Number of solutions = %i \n", (handler.numberOfSolutions));
+        } else {
+            if (fastFlag) {
+                printf("Number of solutions = %i \n", (handler.numberOfSolutions));
+            } else {
+                printf("Number of solutions = %i \n", (2*handler.numberOfSolutions));
+            }
         }
 
-        printf("Execution time = %f [s] \n", (MPI_Wtime() - t));
+        if (uniqueFlag) {
+            printf("Number of unique solutions = %i \n",(handler.numberOfUniqueSolutions));
+        }
+
+        printf("Execution time = %f [s] \n",(MPI_Wtime()-t));
     }
 
+    MPI_Barrier(MPI_COMM_WORLD);
     MPI_Finalize();
+
     return 0;
 }

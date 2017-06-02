@@ -37,6 +37,11 @@ Handler::~Handler() {
 }
 
 
+void Handler::freeMPIDerivedType() {
+    MPI_Type_free(&mpiTaskDetails);
+}
+
+
 int** Handler::allocate2DInt(int rows, int cols) {
     int *data = (int *)malloc(rows*cols*sizeof(int));
     int **array= (int **)malloc(rows*sizeof(int*));
@@ -95,13 +100,13 @@ void Handler::masterSolveAllSolutions() {
 void Handler::masterSolveAllSolutionsSparse() {
     taskDetails.task = WORK_COUNT;
     if (numberOfProcessors > numberOfQueens) {
-        for (int i = 0; i < ceil(numberOfQueens/2); i++) {
+        for (int i = 0; i < ceil((double) numberOfQueens/2); i++) {
             for (int j = 0; j < numberOfQueens; j++) {
                 if (!subCheck(i, j)) {
 
                     if (i == floor(numberOfQueens/2)) {
                         if (numberOfQueens % 2 != 0) {
-                            if (j >= ceil(numberOfQueens / 2)) {
+                            if (j >= ceil((double) numberOfQueens / 2)) {
                                 continue;
                             }
                         }
@@ -119,7 +124,7 @@ void Handler::masterSolveAllSolutionsSparse() {
             }
         }
     } else {
-        for (int i = 0; i < ceil((float) numberOfQueens/2); i++) {
+        for (int i = 0; i < ceil((double) numberOfQueens/2); i++) {
             MPI_Recv(&msg, 1, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
             workerid = status.MPI_SOURCE;
 

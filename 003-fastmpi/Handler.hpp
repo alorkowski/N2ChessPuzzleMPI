@@ -41,21 +41,17 @@ public:
 	 */
     virtual ~Handler();
 
-    /*! A method to solve for all possible solutions specific to processor Rank 0.
+    /*! A method to solve for all possible solutions.
      */
-    void masterSolveAllSolutions();
+    void solveAllSolutions(Chessboard chessboard,
+                           int rootColumn,
+                           int rowPlacement);
 
-    /*! A method to solve for some of the possible solutions specific to processor Rank 0.
+    /*! A method to solve for some of the possible solutions.
      */
-    void masterSolveAllSolutionsSparse();
-
-    /*! A method to solve for all possible solutions specific to any processor not Rank 0.
-     */
-    void workerSolveAllSolutions();
-
-    /*! A method to solve for some of the possible solutions specific to any processor not Rank 0.
-     */
-    void workerSolveAllSolutionsSparse();
+    void solveAllSolutionsSparse(Chessboard chessboard,
+                                 int rootColumn,
+                                 int rowPlacement);
 
     /*! A method to find all solutions some a set of partial solutions.
     */
@@ -88,8 +84,6 @@ public:
     /*! A method to print all unique solutions in a traditional chessboard format.
      */
     void printUniqueGameBoards();
-
-    void freeMPIDerivedType();
 
     void convertAllSolutionVectorToArray();
     void convertUniqueSolutionVectorToArray();

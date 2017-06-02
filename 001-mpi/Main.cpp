@@ -260,6 +260,8 @@ int main(int argc, char **argv) {
         printf("Execution time = %f [s] \n",(MPI_Wtime()-t));
     }
 
+    handler.freeMPIDerivedType();
+
     MPI_Barrier(MPI_COMM_WORLD);
     MPI_Finalize();
 
