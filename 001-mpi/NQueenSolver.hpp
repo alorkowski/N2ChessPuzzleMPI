@@ -37,36 +37,54 @@ public:
                        std::vector<Chessboard> &solutions,
                        int &count);
 
-    int RotaGB(int i,
-               int n,
-               Chessboard inmat);
-
-    int MirrorGB(int i,
-                 int n,
-                 Chessboard inmat);
-
-    bool CheckGB(int i,
-                 int n,
-                 int num,
-                 Chessboard altmat,
-                 std::vector<Chessboard> &mat);
-
     /*! A method to filter out unique solutions among all NQueen solutions.
      *
-     * \param i The index of a solution to test.
+     * \param indexToTest The index of a solution to test.
      * \param numberOfQueens The total number of queens to place.
      * \param mat A vector containing all solutions.
      * \param umat A vector containing all unique solutions.
      * \param count The current number of unique solutions found.
      */
-    void UniqGB(int i,
+    void UniqGB(int indexToTest,
                 int numberOfQueens,
                 std::vector<Chessboard> &mat,
                 std::vector<Chessboard> &umat,
                 int &count);
 
-private:
-    //bool conflict(Chessboard &hist, int col, int i, int j);
+protected:
+    /*! A method to call the backtracking algorithm.
+     *
+     * \param index The index of chessboard object to rotate.
+     * \param n The number of queens.
+     * \param inmat The chessboard object to rotate.
+     */
+    int RotaGB(int index,
+               int n,
+               Chessboard inmat);
+
+    /*! A method to call the backtracking algorithm.
+     *
+     * @param index The index of chessboard object to mirror.
+     * @param n The number of queens.
+     * @param inmat The chessboard object to mirror.
+     *
+     */
+    int MirrorGB(int index,
+                 int n,
+                 Chessboard inmat);
+
+    /*! A method to test for uniqueness.
+     *
+     * @param index The index of chessboard object to test for uniqueness.
+     * @param n The number of queens.
+     * @param altmat A chessboard object to test for uniqueness.
+     * @param mat A vector of Chessboard objects to compare against.
+     * @return True if the chessboard object is unique.  False otherwise.
+     */
+    bool CheckGB(int index,
+                 int n,
+                 Chessboard altmat,
+                 std::vector<Chessboard> &mat);
 };
 
 #endif //NQUEENSOLVER_HPP_

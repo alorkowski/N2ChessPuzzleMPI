@@ -29,33 +29,16 @@ Handler::Handler(int n,
 
 Handler::~Handler() {
     if (allSolutionAllocated) {
-        deallocate2DInt(allSolutionsArray);
+        memoryAllocationTool.deallocate2DInt(allSolutionsArray);
     }
     if (uniqueSolutionAllocated) {
-        deallocate2DInt(uniqueSolutionsArray);
+        memoryAllocationTool.deallocate2DInt(uniqueSolutionsArray);
     }
 }
 
 
 void Handler::freeMPIDerivedType() {
     MPI_Type_free(&mpiTaskDetails);
-}
-
-
-int** Handler::allocate2DInt(int nRow, int nColumn) {
-    int* data = new int[nRow*nColumn];
-    int** array = new int*[nRow];
-    for (int i = 0; i < nRow; ++i, data += nColumn) {
-        array[i] = data;
-    }
-
-    return array;
-}
-
-
-void Handler::deallocate2DInt(int** array) {
-    delete[] array[0];
-    delete[] array;
 }
 
 
@@ -241,7 +224,7 @@ void Handler::reconstructSparseToDense() {
 
 void Handler::convertAllSolutionVectorToArray() {
 
-    allSolutionsArray = allocate2DInt(numberOfSolutions, numberOfQueens);
+    allSolutionsArray = memoryAllocationTool.allocate2DInt(numberOfSolutions, numberOfQueens);
     if (numberOfSolutions == 0) { return; }
     allSolutionAllocated = true;
 
@@ -255,7 +238,7 @@ void Handler::convertAllSolutionVectorToArray() {
 
 void Handler::convertUniqueSolutionVectorToArray() {
 
-    uniqueSolutionsArray = allocate2DInt(numberOfUniqueSolutions, numberOfQueens);
+    uniqueSolutionsArray = memoryAllocationTool.allocate2DInt(numberOfUniqueSolutions, numberOfQueens);
     if (numberOfUniqueSolutions == 0) { return; }
     uniqueSolutionAllocated = true;
 
@@ -267,7 +250,7 @@ void Handler::convertUniqueSolutionVectorToArray() {
 }
 
 
-void Handler::rewriteVector(int** allSolutionArray) {
+void Handler::convertAllSolutionArrayToVector(int** allSolutionArray) {
     allSolutions.clear();
     for(int i = 0; i < numberOfSolutions; i++) {
         Chessboard reconstructedChessboard(numberOfQueens);
@@ -279,7 +262,7 @@ void Handler::rewriteVector(int** allSolutionArray) {
 }
 
 
-void Handler::rewriteUniqueVector(int** uniqueSolutionArray) {
+void Handler::convertUniqueSolutionArrayToVector(int** uniqueSolutionArray) {
     uniqueSolutions.clear();
     for(int i = 0; i < numberOfUniqueSolutions; i++) {
         Chessboard reconstructedChessboard(numberOfQueens);

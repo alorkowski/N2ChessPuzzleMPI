@@ -48,9 +48,9 @@ void Chessboard::printGameBoard() {
     for (int i = 0; i < getSize(); i++){
         for (int j = 0; j < getSize(); j++){
             if (j == state.at(i)) {
-                std::cout << 1;
+                std::cout << "Q";
             } else {
-                std::cout << 0;
+                std::cout << "#";
             }
         }
         std::cout << std::endl;

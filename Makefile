@@ -26,9 +26,5 @@ fastmpi:
 	mkdir -p build
 	$(CXXMPI) $(CXXFLAGS) -o build/nqueen-fastmpi $(FAST_MPI_SRC)
 
-test:
-	mkdir -p build
-	$(CXXMPI) $(CXXFLAGS) -o build/nqueen-mpi testMPI/*.cpp
-
 clean:
 	rm -rf build

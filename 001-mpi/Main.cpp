@@ -14,36 +14,9 @@
 #include <cstring>
 #include "mpi.h"
 #include "Handler.hpp"
+#include "MemoryAllocationTool.hpp"
 
 #define MASTER 0
-
-int* allocate1DInt(int nRow) {
-    int* array = new int[nRow];
-    return array;
-}
-
-
-int** allocate2DInt(int nRow, int nColumn) {
-    int* data = new int[nRow*nColumn];
-    int** array = new int*[nRow];
-    for (int i = 0; i < nRow; ++i, data += nColumn) {
-        array[i] = data;
-    }
-
-    return array;
-}
-
-
-void deallocate1DInt(int* array) {
-    delete[] array;
-}
-
-
-void deallocate2DInt(int** array) {
-    delete[] array[0];
-    delete[] array;
-}
-
 
 int main(int argc, char **argv) {
     int    prank, psize;
@@ -87,6 +60,7 @@ int main(int argc, char **argv) {
     if (numberOfQueens == 0){ numberOfQueens = 4; }
 
     Handler handler(numberOfQueens, prank, psize);
+    MemoryAllocationTool memoryAllocationTool = MemoryAllocationTool();
 
     int numberOfSolutions;
     int numberOfUniqueSolutions;
@@ -118,9 +92,9 @@ int main(int argc, char **argv) {
 
     if ( printFlag || gameFlag || uniqueFlag ) {
 
-        int *localRecvCounts = allocate1DInt(psize);
-        int *globalRecvCounts = allocate1DInt(psize);
-        int *globalRecvDisplacements = allocate1DInt(psize);
+        int *localRecvCounts = memoryAllocationTool.allocate1DInt(psize);
+        int *globalRecvCounts = memoryAllocationTool.allocate1DInt(psize);
+        int *globalRecvDisplacements = memoryAllocationTool.allocate1DInt(psize);
 
         for (int i = 0; i < psize; ++i) {
             localRecvCounts[i] = 0;
@@ -147,7 +121,7 @@ int main(int argc, char **argv) {
 
         MPI_Bcast(&numberOfSolutions, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
-        int **allSolutions = allocate2DInt(numberOfSolutions, numberOfQueens);
+        int **allSolutions = memoryAllocationTool.allocate2DInt(numberOfSolutions, numberOfQueens);
         handler.convertAllSolutionVectorToArray();
 
         MPI_Gatherv(&(handler.allSolutionsArray[0][0]),
@@ -164,7 +138,7 @@ int main(int argc, char **argv) {
 
         if (prank == MASTER) {
             handler.numberOfSolutions = numberOfSolutions;
-            handler.rewriteVector(allSolutions);
+            handler.convertAllSolutionArrayToVector(allSolutions);
         }
 
         if (uniqueFlag) {
@@ -176,7 +150,7 @@ int main(int argc, char **argv) {
             handler.numberOfSolutions = numberOfSolutions;
 
             if (prank != MASTER) {
-                handler.rewriteVector(allSolutions);
+                handler.convertAllSolutionArrayToVector(allSolutions);
             }
 
             handler.solveUniqueSolutions();
@@ -214,7 +188,7 @@ int main(int argc, char **argv) {
 
             MPI_Bcast(&numberOfUniqueSolutions, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
-            int **uniqueSolutions = allocate2DInt(numberOfUniqueSolutions, numberOfQueens);
+            int **uniqueSolutions = memoryAllocationTool.allocate2DInt(numberOfUniqueSolutions, numberOfQueens);
 
             handler.convertUniqueSolutionVectorToArray();
 
@@ -230,17 +204,17 @@ int main(int argc, char **argv) {
 
             if (prank == MASTER) {
                 handler.numberOfUniqueSolutions = numberOfUniqueSolutions;
-                handler.rewriteUniqueVector(uniqueSolutions);
+                handler.convertUniqueSolutionArrayToVector(uniqueSolutions);
             }
 
-            deallocate2DInt(uniqueSolutions);
+            memoryAllocationTool.deallocate2DInt(uniqueSolutions);
         }
 
-        deallocate2DInt(allSolutions);
+        memoryAllocationTool.deallocate2DInt(allSolutions);
 
-        deallocate1DInt(localRecvCounts);
-        deallocate1DInt(globalRecvCounts);
-        deallocate1DInt(globalRecvDisplacements);
+        memoryAllocationTool.deallocate1DInt(localRecvCounts);
+        memoryAllocationTool.deallocate1DInt(globalRecvCounts);
+        memoryAllocationTool.deallocate1DInt(globalRecvDisplacements);
     }
 
     if (prank == MASTER) {

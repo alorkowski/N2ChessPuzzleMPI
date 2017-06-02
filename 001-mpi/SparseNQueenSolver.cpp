@@ -1,5 +1,4 @@
 #include "SparseNQueenSolver.hpp"
-#include <iostream>
 
 // i is the row index and j is the column index
 #define conflict(i, j, col) (hist.getState().at(j) == i || abs(hist.getState().at(j) - i) == col - j)
@@ -47,14 +46,14 @@ void SparseNQueenSolver::solve(int rootColumn,
 }
 
 
-void SparseNQueenSolver::reconstructSparseToDense(int i,
+void SparseNQueenSolver::reconstructSparseToDense(int index,
                                                   int numberOfQueens,
                                                   std::vector<Chessboard> &mat,
                                                   int &count) {
     Chessboard matM(numberOfQueens);
 
     // Reflection of the original Game Board.
-    for (int r = 0; r < numberOfQueens ; r++){matM.setState(r, MirrorGB(r, numberOfQueens, mat.at(i)));}
+    for (int r = 0; r < numberOfQueens ; r++){matM.setState(r, MirrorGB(r, numberOfQueens, mat.at(index)));}
 
     mat.push_back(matM);
     count++;
