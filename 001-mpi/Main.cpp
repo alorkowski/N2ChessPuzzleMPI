@@ -17,19 +17,31 @@
 
 #define MASTER 0
 
-int* allocate1DInt(int rows) {
-    int *array = (int *)malloc(rows*sizeof(int));
+int* allocate1DInt(int nRow) {
+    int* array = new int[nRow];
+    return array;
+}
+
+
+int** allocate2DInt(int nRow, int nColumn) {
+    int* data = new int[nRow*nColumn];
+    int** array = new int*[nRow];
+    for (int i = 0; i < nRow; ++i, data += nColumn) {
+        array[i] = data;
+    }
 
     return array;
 }
 
-int** allocate2DInt(int rows, int cols) {
-    int *data = (int *)malloc(rows*cols*sizeof(int));
-    int **array= (int **)malloc(rows*sizeof(int*));
-    for (int i=0; i<rows; i++)
-        array[i] = &(data[cols*i]);
 
-    return array;
+void deallocate1DInt(int* array) {
+    delete[] array;
+}
+
+
+void deallocate2DInt(int** array) {
+    delete[] array[0];
+    delete[] array;
 }
 
 
@@ -148,6 +160,8 @@ int main(int argc, char **argv) {
                     0,
                     MPI_COMM_WORLD);
 
+        MPI_Barrier(MPI_COMM_WORLD);
+
         if (prank == MASTER) {
             handler.numberOfSolutions = numberOfSolutions;
             handler.rewriteVector(allSolutions);
@@ -166,8 +180,6 @@ int main(int argc, char **argv) {
             }
 
             handler.solveUniqueSolutions();
-
-            free(allSolutions);
 
             MPI_Reduce(&handler.numberOfUniqueSolutions,
                        &numberOfUniqueSolutions,
@@ -220,14 +232,15 @@ int main(int argc, char **argv) {
                 handler.numberOfUniqueSolutions = numberOfUniqueSolutions;
                 handler.rewriteUniqueVector(uniqueSolutions);
             }
-            free(uniqueSolutions);
-        } else {
-            free(allSolutions);
+
+            deallocate2DInt(uniqueSolutions);
         }
 
-        free(localRecvCounts);
-        free(globalRecvCounts);
-        free(globalRecvDisplacements);
+        deallocate2DInt(allSolutions);
+
+        deallocate1DInt(localRecvCounts);
+        deallocate1DInt(globalRecvCounts);
+        deallocate1DInt(globalRecvDisplacements);
     }
 
     if (prank == MASTER) {

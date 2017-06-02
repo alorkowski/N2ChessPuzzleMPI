@@ -138,7 +138,8 @@ protected:
 
     mpiData taskDetails;
 
-    int** allocate2DInt(int rows, int cols);
+    int** allocate2DInt(int nRow, int nCol);
+    void deallocate2DInt(int** array);
 
     bool allSolutionAllocated = false;
     bool uniqueSolutionAllocated = false;
@@ -146,7 +147,6 @@ protected:
 private:
     NQueenSolver solver;
     SparseNQueenSolver sparseSolver;
-
 };
 
 #endif /* HANDLER_HPP_ */

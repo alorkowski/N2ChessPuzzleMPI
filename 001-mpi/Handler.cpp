@@ -29,10 +29,10 @@ Handler::Handler(int n,
 
 Handler::~Handler() {
     if (allSolutionAllocated) {
-        free(allSolutionsArray);
+        deallocate2DInt(allSolutionsArray);
     }
     if (uniqueSolutionAllocated) {
-        free(uniqueSolutionsArray);
+        deallocate2DInt(uniqueSolutionsArray);
     }
 }
 
@@ -42,14 +42,20 @@ void Handler::freeMPIDerivedType() {
 }
 
 
-int** Handler::allocate2DInt(int rows, int cols) {
-    int *data = (int *)malloc(rows*cols*sizeof(int));
-    int **array= (int **)malloc(rows*sizeof(int*));
-    for (int i=0; i<rows; i++) {
-        array[i] = &(data[cols * i]);
+int** Handler::allocate2DInt(int nRow, int nColumn) {
+    int* data = new int[nRow*nColumn];
+    int** array = new int*[nRow];
+    for (int i = 0; i < nRow; ++i, data += nColumn) {
+        array[i] = data;
     }
 
     return array;
+}
+
+
+void Handler::deallocate2DInt(int** array) {
+    delete[] array[0];
+    delete[] array;
 }
 
 
@@ -236,10 +242,8 @@ void Handler::reconstructSparseToDense() {
 void Handler::convertAllSolutionVectorToArray() {
 
     allSolutionsArray = allocate2DInt(numberOfSolutions, numberOfQueens);
-
-    allSolutionAllocated = true;
-
     if (numberOfSolutions == 0) { return; }
+    allSolutionAllocated = true;
 
     for (int i = 0; i < numberOfSolutions; ++i) {
         for (int j = 0; j < numberOfQueens; ++j) {
@@ -252,10 +256,8 @@ void Handler::convertAllSolutionVectorToArray() {
 void Handler::convertUniqueSolutionVectorToArray() {
 
     uniqueSolutionsArray = allocate2DInt(numberOfUniqueSolutions, numberOfQueens);
-
-    uniqueSolutionAllocated = true;
-
     if (numberOfUniqueSolutions == 0) { return; }
+    uniqueSolutionAllocated = true;
 
     for (int i = 0; i < numberOfUniqueSolutions; ++i) {
         for (int j = 0; j < numberOfQueens; ++j) {
@@ -265,7 +267,7 @@ void Handler::convertUniqueSolutionVectorToArray() {
 }
 
 
-void Handler::rewriteVector(int **allSolutionArray) {
+void Handler::rewriteVector(int** allSolutionArray) {
     allSolutions.clear();
     for(int i = 0; i < numberOfSolutions; i++) {
         Chessboard reconstructedChessboard(numberOfQueens);
@@ -277,7 +279,7 @@ void Handler::rewriteVector(int **allSolutionArray) {
 }
 
 
-void Handler::rewriteUniqueVector(int **uniqueSolutionArray) {
+void Handler::rewriteUniqueVector(int** uniqueSolutionArray) {
     uniqueSolutions.clear();
     for(int i = 0; i < numberOfUniqueSolutions; i++) {
         Chessboard reconstructedChessboard(numberOfQueens);
