@@ -10,12 +10,15 @@
 
 Handler::Handler(int n) : numberOfQueens(n) {}
 
+
 Handler::~Handler() {}
 
-bool Handler::subcheck(int i, int j) {
+
+bool Handler::subCheck(int i, int j) {
     if (j == i || abs(j - i) == 1){ return true; }
     else { return false; }
 }
+
 
 void Handler::solveAllSolutions() {
     Chessboard chessboard(numberOfQueens);
@@ -23,7 +26,7 @@ void Handler::solveAllSolutions() {
     for (int i = 0; i < numberOfQueens; i++) {
         chessboard.setState(0, i);
         int col = 1;
-        solver.solve(col - 1, i, numberOfQueens, col, chessboard, allSolution, numberOfSolutions);
+        solver.solve(col - 1, i, numberOfQueens, col, chessboard, allSolutions, numberOfSolutions);
     }
 }
 
@@ -34,7 +37,7 @@ void Handler::solveAllSolutionsSparse() {
     for (int i = 0; i < ceil((float) numberOfQueens/2); i++) {
         chessboard.setState(0, i);
         int col = 1;
-        solver.solve(col - 1, i, numberOfQueens, col, chessboard, allSolution, numberOfSolutions);
+        solver.solve(col - 1, i, numberOfQueens, col, chessboard, allSolutions, numberOfSolutions);
     }
 }
 
@@ -42,16 +45,16 @@ void Handler::solveAllSolutionsSparse() {
 void Handler::solveUniqueSolutions() {
     NQueenSolver solver;
     for (int i = 0; i < numberOfSolutions; i++) {
-        solver.UniqGB(i, numberOfQueens, allSolution, uniqueSolution, numberOfUniqueSolutions);
+        solver.UniqGB(i, numberOfQueens, allSolutions, uniqueSolutions, numberOfUniqueSolutions);
     }
 }
 
 
 void Handler::reconstructSparseToDense() {
     SparseNQueenSolver solver;
-    int maxIterationCount = allSolution.size();
+    int maxIterationCount = allSolutions.size();
     for (int i = 0; i < maxIterationCount; i++) {
-        solver.reconstructSparseToDense(i, numberOfQueens, allSolution, numberOfSolutions);
+        solver.reconstructSparseToDense(i, numberOfQueens, allSolutions, numberOfSolutions);
     }
 }
 
@@ -59,7 +62,7 @@ void Handler::reconstructSparseToDense() {
 void Handler::printSolutions() {
     std::cout << std::endl << "Printing solutions as arrays" << std::endl;
     for (int i = 0; i < numberOfSolutions; i++) {
-        allSolution.at(i).print();
+        allSolutions.at(i).print();
     }
     std::cout << std::endl;
 }
@@ -67,8 +70,8 @@ void Handler::printSolutions() {
 
 void Handler::printGameBoards() {
     for (int i = 0; i < numberOfSolutions; i++) {
-        std::cout << std::endl << "No. " << i << std::endl << "**************" << std::endl;
-        allSolution.at(i).printGameBoard();
+        std::cout << std::endl << "No. " << (i + 1) << std::endl << "**************" << std::endl;
+        allSolutions.at(i).printGameBoard();
     }
     std::cout << std::endl;
 }
@@ -77,7 +80,7 @@ void Handler::printGameBoards() {
 void Handler::printUniqueSolutions() {
     std::cout << "Printing unique solutions as arrays" << std::endl;
     for (int i = 0; i < numberOfUniqueSolutions; i++) {
-        uniqueSolution.at(i).print();
+        uniqueSolutions.at(i).print();
     }
     std::cout << std::endl;
 }
@@ -85,8 +88,8 @@ void Handler::printUniqueSolutions() {
 
 void Handler::printUniqueGameBoards() {
     for (int i = 0; i < numberOfUniqueSolutions; i++) {
-        std::cout << std::endl << "unique-No. " << i << std::endl << "**************" << std::endl;
-        uniqueSolution.at(i).printGameBoard();
+        std::cout << std::endl << "unique-No. " << (i + 1) << std::endl << "**************" << std::endl;
+        uniqueSolutions.at(i).printGameBoard();
     }
     std::cout << std::endl;
 }

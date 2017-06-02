@@ -1,10 +1,14 @@
-#include <algorithm>
-#include <cstdlib>
-#include <string>
-#include <sstream>
-#include <cassert>
-#include <cmath>
-#include <iostream>
+/*
+ * Chessboard.cpp
+ *
+ * DESCRIPTION: A class used to create an object storing a possible solution to the NQueen problem.
+ *
+ * Created on: May 21, 2017
+ *
+ * AUTHORS:
+ * Lorkowski, Alexander <alexander.lorkowski@epfl.ch>
+ */
+
 #include "Chessboard.hpp"
 
 Chessboard :: Chessboard(int size) {
@@ -37,13 +41,11 @@ void Chessboard::printGameBoard() {
     for (int i = 0; i < getSize(); i++){
         for (int j = 0; j < getSize(); j++){
             if (j == state.at(i)) {
-                std::cout << 1;
+                std::cout << "Q";
             } else {
-                std::cout << 0;
+                std::cout << "#";
             }
         }
         std::cout << std::endl;
     }
 }
-
-

@@ -14,6 +14,12 @@
 #include <vector>
 #include <stdint.h>
 #include <string>
+#include <algorithm>
+#include <cstdlib>
+#include <sstream>
+#include <cassert>
+#include <cmath>
+#include <iostream>
 
 class Chessboard {
 public:

@@ -1,3 +1,14 @@
+/*
+ * Main.cpp
+ *
+ * DESCRIPTION: Handles all classes related to the NQueen problem.
+ *
+ * Created on: May 21, 2017
+ *
+ * AUTHORS:
+ * Lorkowski, Alexander <alexander.lorkowski@epfl.ch>
+ */
+
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>

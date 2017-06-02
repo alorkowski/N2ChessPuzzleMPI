@@ -46,7 +46,7 @@ public:
      */
     void masterSolveAllSolutions();
 
-    /*! A method to solve for some of the possible solutions specific to processor Rank 0.
+    /*! A method to solve for possible solutions using symmetry specific to processor Rank 0.
      */
     void masterSolveAllSolutionsSparse();
 
@@ -58,7 +58,7 @@ public:
      */
     void workerSolveAllSolutionsSparse();
 
-    /*! A method to find all solutions some a set of partial solutions.
+    /*! A method to find all solutions from a set of partial solutions.
     */
     void reconstructSparseToDense();
 
@@ -104,14 +104,6 @@ public:
      */
     void convertUniqueSolutionArrayToVector(int **uniqueSolutionArray);
 
-    /*! A C++ vector storing all the solutions.
-     */
-    std::vector<Chessboard> allSolutions;
-
-    /*! A C++ vector storing all the unique solutions.
-     */
-    std::vector<Chessboard> uniqueSolutions;
-
     /*! An integer recording the total number of solutions.
      */
     int  numberOfSolutions = 0;
@@ -130,21 +122,13 @@ public:
 
 private:
 
-    /*! A constant integer to request work from the slave processes to master process.
+    /*! A C++ vector storing all the solutions.
      */
-    const int WORK_REQUEST = -1;
+    std::vector<Chessboard> allSolutions;
 
-    /*! A constant integer from the master process to instruct slave processes to solve the NQueen problem.
+    /*! A C++ vector storing all the unique solutions.
      */
-    const int WORK_COUNT = -2;
-
-    /*! A constant integer from the master process to instruct slave processes to stand idle.
-     */
-    const int WORK_STANDBY = -3;
-
-    /*! An integer used to store the current task of the program.
-     */
-    int task;
+    std::vector<Chessboard> uniqueSolutions;
 
     /*! The number of Queens in the NQueen problem as well as the dimension of the chessboard.
     */
@@ -169,6 +153,22 @@ private:
     /*! An object of the MemoryAllocationTool class for dynamically allocating arrays.
     */
     MemoryAllocationTool memoryAllocationTool;
+
+    /*! A constant integer to request work from the slave processes to master process.
+     */
+    const int WORK_REQUEST = -1;
+
+    /*! A constant integer from the master process to instruct slave processes to solve the NQueen problem.
+     */
+    const int WORK_COUNT = -2;
+
+    /*! A constant integer from the master process to instruct slave processes to stand idle.
+     */
+    const int WORK_STANDBY = -3;
+
+    /*! An integer used to store the current task of the program.
+     */
+    int task;
 
     /*! A boolean flag to indicate whether an array has been dynamically allocated.
     */

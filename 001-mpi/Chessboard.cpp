@@ -10,13 +10,6 @@
  */
 
 #include "Chessboard.hpp"
-#include <algorithm>
-#include <cstdlib>
-#include <string>
-#include <sstream>
-#include <cassert>
-#include <cmath>
-#include <iostream>
 
 Chessboard :: Chessboard(int size) {
     std::vector<int> state(size, 0);

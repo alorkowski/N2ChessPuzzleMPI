@@ -1,3 +1,13 @@
+//! Handler.hpp
+/*!
+  \brief A class responsible for containing all calls for solving the NQueen problem.
+  \author Lorkowski, Alexander <alexander.lorkowski@epfl.ch>
+  \version 1.0
+  \date  21 May 2017
+  \remark Ecole Polytechnic Federal de Lausanne (EPFL)
+  \remark MATH-454 Parallel and High-Performance Computing
+*/
+
 #ifndef HANDLER_HPP_
 #define HANDLER_HPP_
 
@@ -7,32 +17,80 @@
 class Handler {
 public:
 
+    /*! A constructor to instantiate variables for Handler object.
+     *
+     * \param n The total number of queens.
+     */
     Handler(int n);
 
+    /*! A virtual destructor for the Handler object.
+	 */
     virtual ~Handler();
 
+    /*! A method to solve for all possible solutions.
+     */
     void solveAllSolutions();
+
+    /*! A method to solve for possible solutions using symmetry.
+     */
     void solveAllSolutionsSparse();
+
+    /*! A method to find all solutions from a set of partial solutions.
+     */
     void reconstructSparseToDense();
+
+    /*! A method to print all solutions.
+     */
     void printSolutions();
+
+    /*! A method to print all solutions in a traditional chessboard format.
+     */
     void printGameBoards();
-    void writeSolutions();
-    void writeGameBoards();
+
+    /*! A method to solve for all unique solutions.
+     */
     void solveUniqueSolutions();
+
+    /*! A method to print all unique solutions.
+     */
     void printUniqueSolutions();
+
+    /*! A method to print all unique solutions in a traditional chessboard format.
+     */
     void printUniqueGameBoards();
 
-    int numberOfSolutions = 0;
-    int numberOfUniqueSolutions = 0;
+
+    void writeSolutions();
+    void writeGameBoards();
+
+    /*! An integer recording the total number of solutions.
+     */
+    int  numberOfSolutions = 0;
+
+    /*! An integer recording the total number of unique solutions.
+     */
+    int  numberOfUniqueSolutions = 0;
 
 private:
 
+    /*! The number of Queens in the NQueen problem as well as the dimension of the chessboard.
+    */
     int numberOfQueens;
 
-    bool subcheck(int i, int j);
+    /*! A method to check the validity of the placement of a queen.
+     *
+     * \param i The current column.
+     * \param j The current row.
+     */
+    bool subCheck(int i, int j);
 
-    std::vector<Chessboard> allSolution;
-    std::vector<Chessboard> uniqueSolution;
+    /*! A C++ vector storing all the solutions.
+     */
+    std::vector<Chessboard> allSolutions;
+
+    /*! A C++ vector storing all the unique solutions.
+     */
+    std::vector<Chessboard> uniqueSolutions;
 };
 
 

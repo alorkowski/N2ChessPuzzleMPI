@@ -1,3 +1,14 @@
+/*
+ * SparseNQueenSolver.cpp
+ *
+ * DESCRIPTION: Contains the backtracking algorithm using symmetry and reconstruct all solutions.
+ *
+ * Created on: May 21, 2017
+ *
+ * AUTHORS:
+ * Lorkowski, Alexander <alexander.lorkowski@epfl.ch>
+ */
+
 #include "SparseNQueenSolver.hpp"
 
 // i is the row index and j is the column index

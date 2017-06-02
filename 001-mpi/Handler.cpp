@@ -286,7 +286,7 @@ void Handler::printAllSolutions() {
 void Handler::printAllGameBoards() {
     std::cout << std::endl << "Printing solutions as in traditional chessboard format" << std::endl;
     for (int i = 0; i < numberOfSolutions; i++) {
-        std::cout << std::endl << "No. " << i << std::endl << "**************" << std::endl;
+        std::cout << std::endl << "No. " << ( i + 1 ) << std::endl << "**************" << std::endl;
         allSolutions.at(i).printGameBoard();
     }
     std::cout << std::endl;
@@ -305,7 +305,7 @@ void Handler::printUniqueSolutions() {
 void Handler::printUniqueGameBoards() {
     std::cout << std::endl << "Printing unique solutions as in traditional chessboard format" << std::endl;
     for (int i = 0; i < numberOfUniqueSolutions; i++) {
-        std::cout << std::endl << "Unique No. " << i << std::endl << "**************" << std::endl;
+        std::cout << std::endl << "Unique No. " << ( i + 1 ) << std::endl << "**************" << std::endl;
         uniqueSolutions.at(i).printGameBoard();
     }
     std::cout << std::endl;
