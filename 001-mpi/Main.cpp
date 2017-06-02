@@ -17,6 +17,12 @@
 
 #define MASTER 0
 
+int* allocate1DInt(int rows) {
+    int *array = (int *)malloc(rows*sizeof(int));
+
+    return array;
+}
+
 int** allocate2DInt(int rows, int cols) {
     int *data = (int *)malloc(rows*cols*sizeof(int));
     int **array= (int **)malloc(rows*sizeof(int*));
@@ -100,9 +106,9 @@ int main(int argc, char **argv) {
 
     if ( printFlag || gameFlag || uniqueFlag ) {
 
-        int localRecvCounts[psize];
-        int globalRecvCounts[psize];
-        int globalRecvDisplacements[psize];
+        int *localRecvCounts = allocate1DInt(psize);
+        int *globalRecvCounts = allocate1DInt(psize);
+        int *globalRecvDisplacements = allocate1DInt(psize);
 
         for (int i = 0; i < psize; ++i) {
             localRecvCounts[i] = 0;
@@ -218,6 +224,10 @@ int main(int argc, char **argv) {
         } else {
             free(allSolutions);
         }
+
+        free(localRecvCounts);
+        free(globalRecvCounts);
+        free(globalRecvDisplacements);
     }
 
     if (prank == MASTER) {
