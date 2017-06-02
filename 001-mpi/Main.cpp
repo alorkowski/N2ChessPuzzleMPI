@@ -18,16 +18,43 @@
 
 #define MASTER 0
 
+void usage(char* progName) {
+    std::cout << std::endl
+              << "Usage: mpirun -np N " << progName << " [options]" << std::endl
+              << std::endl
+              << "Options:" << std::endl
+              << "-h     | Print this help" << std::endl
+              << "-n [N] | Number of Queens" << std::endl
+              << "-f     | Solve all solutions using symmetry" << std::endl
+              << "-p     | Print solutions on screen" << std::endl
+              << "-g     | Print solutions on screen in game board format" << std::endl
+              << "-w     | Write solutions to a file" << std::endl
+              << "-wg    | Write solutions to a file in game board format" << std::endl
+              << "-u     | Solve for unique solutions" << std::endl
+              << "-uf    | Solve for unique solutions using symmetry" << std::endl
+              << "-up    | Print unique solutions on screen" << std::endl
+              << "-ug    | Print unique solutions on screen in game board format" << std::endl
+              << "-wu    | Write unique solutions to a file" << std::endl
+              << "-wug   | Write unique solutions to a file in game board format" << std::endl
+              << std::endl;
+}
+
+
 int main(int argc, char **argv) {
     int    prank, psize;
     int    numberOfQueens = 0;
     bool   fastFlag = false;
     bool   printFlag = false;
     bool   gameFlag = false;
+    bool   writeFlag = false;
+    bool   writeGBFlag = false;
     bool   uniqueFlag = false;
     bool   fastUniqueFlag = false;
     bool   uniquePrintFlag = false;
     bool   uniqueGameFlag = false;
+    bool   writeUniqueFlag = false;
+    bool   writeUniqueGBFlag = false;
+    bool   exitFlag = false;
 
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &prank);
@@ -35,6 +62,7 @@ int main(int argc, char **argv) {
 
     if ( psize < 2 ) {
         std::cout << "Error.  Programs requires a minimum of two processors." << std::endl;
+        usage(argv[0]);
         MPI_Finalize();
         return 0;
     }
@@ -53,10 +81,32 @@ int main(int argc, char **argv) {
         else if (strcmp(argv[i], "-uf") == 0){ fastUniqueFlag = true; uniqueFlag = true;}
         else if (strcmp(argv[i], "-p") == 0){ printFlag = true; }
         else if (strcmp(argv[i], "-g") == 0){ gameFlag = true; }
+        else if (strcmp(argv[i], "-w") == 0){ writeFlag = true; }
+        else if (strcmp(argv[i], "-wg") == 0){ writeGBFlag = true; }
         else if (strcmp(argv[i], "-up") == 0){ uniquePrintFlag = true; }
         else if (strcmp(argv[i], "-ug") == 0){ uniqueGameFlag = true; }
-        else {}
+        else if (strcmp(argv[i], "-wu") == 0){ writeUniqueFlag = true; }
+        else if (strcmp(argv[i], "-wug") == 0){ writeUniqueGBFlag = true; }
+        else if (strcmp(argv[i], "-h") == 0){
+            if(prank == MASTER) {
+                usage(argv[0]);
+            }
+            exitFlag = true;
+        }
+        else {
+            if(prank == MASTER) {
+                usage(argv[0]);
+            }
+            exitFlag = true;
+        }
     }
+
+    if ( exitFlag) {
+        MPI_Barrier(MPI_COMM_WORLD);
+        MPI_Finalize();
+        return 0;
+    }
+
     if (numberOfQueens == 0){ numberOfQueens = 4; }
 
     Handler handler(numberOfQueens, prank, psize);
