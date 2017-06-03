@@ -36,6 +36,7 @@ void usage(char* progName) {
               << "-ug    | Print unique solutions on screen in game board format" << std::endl
               << "-wu    | Write unique solutions to a file" << std::endl
               << "-wug   | Write unique solutions to a file in game board format" << std::endl
+              << "-mpiio | Write out binary file of the solutions in array format" << std::endl
               << std::endl;
 }
 
@@ -54,6 +55,7 @@ int main(int argc, char **argv) {
     bool   uniqueGameFlag = false;
     bool   writeUniqueFlag = false;
     bool   writeUniqueGBFlag = false;
+    bool   mpiioWriteFlag = false;
     bool   exitFlag = false;
 
     MPI_Init(&argc, &argv);
@@ -87,6 +89,7 @@ int main(int argc, char **argv) {
         else if (strcmp(argv[i], "-ug") == 0){ uniqueFlag = true; uniqueGameFlag = true; }
         else if (strcmp(argv[i], "-wu") == 0){ uniqueFlag = true; writeUniqueFlag = true; }
         else if (strcmp(argv[i], "-wug") == 0){ uniqueFlag = true; writeUniqueGBFlag = true; }
+        else if (strcmp(argv[i], "-mpiio") == 0) { mpiioWriteFlag = true; }
         else if (strcmp(argv[i], "-h") == 0){
             if(prank == MASTER) {
                 usage(argv[0]);
@@ -154,7 +157,7 @@ int main(int argc, char **argv) {
                0,
                MPI_COMM_WORLD);
 
-    if ( printFlag || gameFlag || writeFlag || writeGBFlag || uniqueFlag ) {
+    if ( printFlag || gameFlag || writeFlag || writeGBFlag || uniqueFlag || mpiioWriteFlag) {
 
         /* TASK 2
          * Gather all solutions for printing or for finding all unique solutions
@@ -202,7 +205,22 @@ int main(int argc, char **argv) {
                     0,
                     MPI_COMM_WORLD);
 
-        MPI_Barrier(MPI_COMM_WORLD);
+        if (mpiioWriteFlag){
+            MPI_Offset offset = sizeof(int)*globalRecvDisplacements[prank];
+            MPI_File file;
+            MPI_Status status;
+
+            // opening one shared file
+            MPI_File_open(MPI_COMM_WORLD,
+                          "mpiIO-All-NQueen.bin",
+                          MPI_MODE_CREATE|MPI_MODE_WRONLY,
+                          MPI_INFO_NULL,
+                          &file);
+
+            MPI_File_seek(file, offset, MPI_SEEK_SET);
+            MPI_File_write(file, &(handler.allSolutionsArray[0][0]), globalRecvCounts[prank], MPI_INT, &status);
+            MPI_File_close(&file);
+        }
 
         if (prank == MASTER) {
             handler.numberOfSolutions = numberOfSolutions;
@@ -274,6 +292,23 @@ int main(int argc, char **argv) {
                         MPI_INT,
                         0,
                         MPI_COMM_WORLD);
+
+            if (mpiioWriteFlag){
+                MPI_Offset offset = sizeof(int)*globalRecvDisplacements[prank];
+                MPI_File file;
+                MPI_Status status;
+
+                // opening one shared file
+                MPI_File_open(MPI_COMM_WORLD,
+                              "mpiIO-Unique-NQueen.bin",
+                              MPI_MODE_CREATE|MPI_MODE_WRONLY,
+                              MPI_INFO_NULL,
+                              &file);
+
+                MPI_File_seek(file, offset, MPI_SEEK_SET);
+                MPI_File_write(file, &(handler.uniqueSolutionsArray[0][0]), globalRecvCounts[prank], MPI_INT, &status);
+                MPI_File_close(&file);
+            }
 
             if (prank == MASTER) {
                 handler.numberOfUniqueSolutions = numberOfUniqueSolutions;
