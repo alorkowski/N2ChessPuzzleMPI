@@ -237,7 +237,7 @@ private:
 
     /*! Specifies the offset of the derived MPI datatype.
     */
-    MPI_Aint     mpiOffsets[4];
+    MPI_Aint mpiOffsets[4];
 
     /*! A type definition for a structure containing required information to pass with MPI calls.
     */

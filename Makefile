@@ -8,8 +8,9 @@ MPI_SRC = 001-mpi/*.cpp
 OMPMPI_SRC = 002-ompmpi/*.cpp
 MPI2_SRC = 003-mpi2/*.cpp
 OMPMPI2_SRC = 004-ompmpi2/*.cpp
+MPIIO_SRC = 005-mpiio/*.cpp
 
-all: serial mpi ompmpi mpi2 ompmpi2
+all: serial mpi mpi2 ompmpi2
 
 serial:
 	mkdir -p build
@@ -30,6 +31,10 @@ mpi2:
 ompmpi2:
 	mkdir -p build
 	$(CXXMPI) $(CXXOMPFLAGS) -o build/nqueen-ompmpi2 $(OMPMPI2_SRC)
+
+mpiio:
+	mkdir -p build
+	$(CXXMPI) $(CXXFLAGS) -o build/nqueen-mpiio $(MPIIO_SRC)
 
 clean:
 	rm -rf build

@@ -61,7 +61,9 @@ int main(int argc, char **argv) {
     MPI_Comm_size(MPI_COMM_WORLD, &psize);
 
     if ( psize < 2 ) {
-        std::cout << "Error.  Programs requires a minimum of two processors." << std::endl;
+        if (prank == MASTER) {
+            std::cout << "Error.  Programs requires a minimum of two processors." << std::endl;
+        }
         usage(argv[0]);
         MPI_Finalize();
         return 0;
@@ -101,13 +103,30 @@ int main(int argc, char **argv) {
         }
     }
 
+    if (numberOfQueens == 1) {
+        if (prank == MASTER) {
+            std::cout << "There is one solution for one queen placed on a 1x1 Chessboard." << std::endl;
+        }
+        exitFlag = true;
+    }
+    if (numberOfQueens == 2 || numberOfQueens == 3) {
+        if (prank == MASTER) {
+            std::cout << "There are no solutions" << std::endl;
+        }
+        exitFlag = true;
+    }
+    if (numberOfQueens == 0){
+        if (prank == MASTER) {
+            std::cout << "Defaulting to N = 4" << std::endl;
+        }
+        numberOfQueens = 4;
+    }
+
     if (exitFlag) {
         MPI_Barrier(MPI_COMM_WORLD);
         MPI_Finalize();
         return 0;
     }
-
-    if (numberOfQueens == 0){ numberOfQueens = 4; }
 
     /* TASK 1
      * Solve for all possible NQueen solutions

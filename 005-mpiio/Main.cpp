@@ -101,13 +101,30 @@ int main(int argc, char **argv) {
         }
     }
 
+    if (numberOfQueens == 1) {
+        if (prank == MASTER) {
+            std::cout << "There is one solution for one queen placed on a 1x1 Chessboard." << std::endl;
+        }
+        exitFlag = true;
+    }
+    if (numberOfQueens == 2 || numberOfQueens == 3) {
+        if (prank == MASTER) {
+            std::cout << "There are no solutions" << std::endl;
+        }
+        exitFlag = true;
+    }
+    if (numberOfQueens == 0){
+        if (prank == MASTER) {
+            std::cout << "Defaulting to N = 4" << std::endl;
+        }
+        numberOfQueens = 4;
+    }
+
     if (exitFlag) {
         MPI_Barrier(MPI_COMM_WORLD);
         MPI_Finalize();
         return 0;
     }
-
-    if (numberOfQueens == 0){ numberOfQueens = 4; }
 
     /* TASK 1
      * Solve for all possible NQueen solutions
@@ -181,6 +198,12 @@ int main(int argc, char **argv) {
 
         int **allSolutions = memoryAllocationTool.allocate2DInt(numberOfSolutions, numberOfQueens);
         handler.convertAllSolutionVectorToArray();
+
+        if (writeFlag){
+            MPI_Offset offset = sizeof(double)*rank;
+            MPI_File file;
+            MPI_Status status;
+        }
 
         MPI_Gatherv(&(handler.allSolutionsArray[0][0]),
                     globalRecvCounts[prank],
