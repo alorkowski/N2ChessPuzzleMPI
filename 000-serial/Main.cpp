@@ -66,10 +66,10 @@ int main(int argc, char **argv) {
         else if (strcmp(argv[i], "-g") == 0){ gameFlag = true; }
         else if (strcmp(argv[i], "-w") == 0){ writeFlag = true; }
         else if (strcmp(argv[i], "-wg") == 0){ writeGBFlag = true; }
-        else if (strcmp(argv[i], "-up") == 0){ uniquePrintFlag = true; }
-        else if (strcmp(argv[i], "-ug") == 0){ uniqueGameFlag = true; }
-        else if (strcmp(argv[i], "-wu") == 0){ writeUniqueFlag = true; }
-        else if (strcmp(argv[i], "-wug") == 0){ writeUniqueGBFlag = true; }
+        else if (strcmp(argv[i], "-up") == 0){ uniqueFlag = true; uniquePrintFlag = true; }
+        else if (strcmp(argv[i], "-ug") == 0){ uniqueFlag = true; uniqueGameFlag = true; }
+        else if (strcmp(argv[i], "-wu") == 0){ uniqueFlag = true; writeUniqueFlag = true; }
+        else if (strcmp(argv[i], "-wug") == 0){ uniqueFlag = true; writeUniqueGBFlag = true; }
         else if (strcmp(argv[i], "-h") == 0){
             usage(argv[0]);
             return 0;
@@ -99,33 +99,15 @@ int main(int argc, char **argv) {
     if (gameFlag) { handler.printAllGameBoards(); }
     if (writeFlag) { handler.writeAllSolutions(); }
     if (writeGBFlag) { handler.writeAllGameBoards(); }
+    if (uniquePrintFlag) { handler.printUniqueSolutions(); }
+    if (uniqueGameFlag) { handler.printUniqueGameBoards(); }
     if (writeUniqueFlag) { handler.writeUniqueSolutions(); }
     if (writeUniqueGBFlag) { handler.writeUniqueGameBoards(); }
-    if (uniquePrintFlag) {
-        if (!uniqueFlag) {
-            std::cout << "Warning: Program not set to solve for unique solutions.  Please run with -u."
-                      << std::endl;
-        } else {
-            handler.printUniqueSolutions();
-        }
-    }
-    if (uniqueGameFlag) {
-        if (!uniqueFlag) {
-            std::cout << "Warning: Program not set to solve for unique solutions.  Please run with -u."
-                      << std::endl;
-        } else {
-            handler.printUniqueGameBoards();
-        }
-    }
 
     if (!fastUniqueFlag) {
         printf("Number of solutions = %i \n", (handler.numberOfSolutions));
     } else {
-        if (fastFlag) {
-            printf("Number of solutions = %i \n", (handler.numberOfSolutions));
-        } else {
-            printf("Number of solutions = %i \n", (2 * handler.numberOfSolutions));
-        }
+        printf("Number of solutions = %i \n", (2 * handler.numberOfSolutions));
     }
 
     if (uniqueFlag) {

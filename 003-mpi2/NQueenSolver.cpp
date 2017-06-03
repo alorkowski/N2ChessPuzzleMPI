@@ -13,14 +13,6 @@
 
 #define conflict(i, j, col) (hist.getState().at(j) == i || abs(hist.getState().at(j) - i) == col - j)
 
-NQueenSolver::NQueenSolver() {
-    omp_init_lock(&lock);
-}
-
-NQueenSolver::~NQueenSolver() {
-    omp_destroy_lock(&lock);
-}
-
 void NQueenSolver::solve(int rootColumn,
                          int rootValue,
                          int numberOfQueens,
@@ -29,10 +21,8 @@ void NQueenSolver::solve(int rootColumn,
                          std::vector<Chessboard> &solutions,
                          int &count) {
     if (col == numberOfQueens) {
-        omp_set_lock(&lock);
         count++;
         solutions.push_back(hist);
-        omp_unset_lock(&lock);
         return;
     }
 
@@ -40,7 +30,6 @@ void NQueenSolver::solve(int rootColumn,
      * Continue until all initial positions of the Queen
      * on the first column are explored.
      * */
-
     for (int k = 0, j = 0; k < numberOfQueens; k++) {
         for (j = 0; j < col && !conflict(k, j, col); j++);
         if (j < col) {
@@ -54,11 +43,56 @@ void NQueenSolver::solve(int rootColumn,
     }
 }
 
-int NQueenSolver::RotaGB(int i,
+
+void NQueenSolver::UniqGB(int indexToTest,
+                          int numberOfQueens,
+                          std::vector<Chessboard> &mat,
+                          std::vector<Chessboard> &umat,
+                          int &count) {
+    Chessboard matM(numberOfQueens);
+    Chessboard mat90(numberOfQueens), mat180(numberOfQueens), mat270(numberOfQueens);
+
+    // Extract a solution to test for uniqueness
+    // 90-degree rotation.
+    for (int r = 0; r < numberOfQueens ; r++){mat90.setState(r, RotaGB(r, numberOfQueens, mat.at(indexToTest)));}
+    if (!CheckGB(indexToTest, numberOfQueens, mat90, mat)){return;}
+
+    // 180-degree rotation.
+    for (int r = 0; r < numberOfQueens ; r++){mat180.setState(r, RotaGB(r, numberOfQueens, mat90));}
+    if (!CheckGB(indexToTest, numberOfQueens, mat180, mat)){return;}
+
+    // 270-degree rotation.
+    for (int r = 0; r < numberOfQueens ; r++){mat270.setState(r, RotaGB(r, numberOfQueens, mat180));}
+    if (!CheckGB(indexToTest, numberOfQueens, mat270, mat)){return;}
+
+    // Reflection of the original Game Board.
+    for (int r = 0; r < numberOfQueens ; r++){matM.setState(r, MirrorGB(r, numberOfQueens, mat.at(indexToTest)));}
+    if (!CheckGB(indexToTest, numberOfQueens, matM, mat)){return;}
+
+    // 90-degree rotation of the Mirror Board.
+    for (int r = 0; r < numberOfQueens ; r++){mat90.setState(r, RotaGB(r, numberOfQueens, matM));}
+    if (!CheckGB(indexToTest, numberOfQueens, mat90, mat)){return;}
+
+    // 180-degree rotation of the Mirror Board.
+    for (int r = 0; r < numberOfQueens ; r++){mat180.setState(r, RotaGB(r, numberOfQueens, mat90));}
+    if (!CheckGB(indexToTest, numberOfQueens, mat180, mat)){return;}
+
+    // 270-degree rotation of the Mirror Board.
+    for (int r = 0; r < numberOfQueens ; r++){mat270.setState(r, RotaGB(r, numberOfQueens, mat180));}
+    if (!CheckGB(indexToTest, numberOfQueens, mat270, mat)){return;}
+
+    /* If the solution passes all the test, then
+       the solution is unique. */
+    umat.push_back(mat.at(indexToTest));
+    count++;
+}
+
+
+int NQueenSolver::RotaGB(int index,
                          int n,
                          Chessboard inmat) {
-    int rotamat=0;
-    int x = n-i-1;
+    int rotamat = 0;
+    int x = n - index - 1;
     for (int k = 0; k < n; k++){
         if (x == inmat.getState().at(k)){
             rotamat += k;
@@ -67,23 +101,24 @@ int NQueenSolver::RotaGB(int i,
     return rotamat;
 }
 
-int NQueenSolver::MirrorGB(int i,
+
+int NQueenSolver::MirrorGB(int index,
                            int n,
                            Chessboard inmat) {
-    int mirmat = n - 1 - inmat.getState().at(i);
+    int mirmat = n - 1 - inmat.getState().at(index);
     return mirmat;
 }
 
-bool NQueenSolver::CheckGB(int i,
+
+bool NQueenSolver::CheckGB(int index,
                            int n,
-                           int num,
                            Chessboard altmat,
                            std::vector<Chessboard> &mat) {
     int test;
-    for (int m = 0; m < i; m++){
+    for (int m = 0; m < index; m++){
         test = 0;
         for (int j = 0; j < n; j++){
-            if (altmat.getState().at(j) == mat.at(m).getState().at(j)){
+            if (altmat.getState().at(j) == mat.at(m).getState().at(j)) {
                 test++;
             }
             if (test == n - 1 ){
@@ -93,50 +128,3 @@ bool NQueenSolver::CheckGB(int i,
     }
     return true;
 }
-
-void NQueenSolver::UniqGB(int i,
-                          int numberOfQueens,
-                          std::vector<Chessboard> &mat,
-                          std::vector<Chessboard> &umat,
-                          int &count) {
-    Chessboard matM(numberOfQueens);
-    Chessboard mat90(numberOfQueens), mat180(numberOfQueens), mat270(numberOfQueens);
-    int num = (int) mat.size();
-
-    // Extract a solution to test for uniqueness
-    // 90-degree rotation.
-    for (int r = 0; r < numberOfQueens ; r++){mat90.setState(r, RotaGB(r, numberOfQueens, mat.at(i)));}
-    if (!CheckGB(i, numberOfQueens, num, mat90, mat)){return;}
-
-    // 180-degree rotation.
-    for (int r = 0; r < numberOfQueens ; r++){mat180.setState(r, RotaGB(r, numberOfQueens, mat90));}
-    if (!CheckGB(i, numberOfQueens, num, mat180, mat)){return;}
-
-    // 270-degree rotation.
-    for (int r = 0; r < numberOfQueens ; r++){mat270.setState(r, RotaGB(r, numberOfQueens, mat180));}
-    if (!CheckGB(i, numberOfQueens, num, mat270, mat)){return;}
-
-    // Reflection of the original Game Board.
-    for (int r = 0; r < numberOfQueens ; r++){matM.setState(r, MirrorGB(r, numberOfQueens, mat.at(i)));}
-    if (!CheckGB(i, numberOfQueens, num, matM, mat)){return;}
-
-    // 90-degree rotation of the Mirror Board.
-    for (int r = 0; r < numberOfQueens ; r++){mat90.setState(r, RotaGB(r, numberOfQueens, matM));}
-    if (!CheckGB(i, numberOfQueens, num, mat90, mat)){return;}
-
-    // 180-degree rotation of the Mirror Board.
-    for (int r = 0; r < numberOfQueens ; r++){mat180.setState(r, RotaGB(r, numberOfQueens, mat90));}
-    if (!CheckGB(i, numberOfQueens, num, mat180, mat)){return;}
-
-    // 270-degree rotation of the Mirror Board.
-    for (int r = 0; r < numberOfQueens ; r++){mat270.setState(r, RotaGB(r, numberOfQueens, mat180));}
-    if (!CheckGB(i, numberOfQueens, num, mat270, mat)){return;}
-
-    /* If the solution passes all the test, then
-       the solution is unique. */
-    omp_set_lock(&lock);
-    umat.push_back(mat.at(i));
-    count++;
-    omp_unset_lock(&lock);
-}
-

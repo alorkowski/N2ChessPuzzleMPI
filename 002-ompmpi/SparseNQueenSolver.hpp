@@ -20,6 +20,16 @@
 class SparseNQueenSolver : public NQueenSolver {
 public:
 
+    /*! A method to call the backtracking algorithm utilizing symmetry.
+     *
+     * \param rootColumn The column of the last place queen.
+     * \param rootValue The row of the last place queen.
+     * \param numberOfQueens The total number of queens to place.
+     * \param col The current column.
+     * \param hist A chessboard object containing an incomplete solution.
+     * \param solutions A vector containing all solved solutions.
+     * \param count The current number of solutions found.
+     */
     void solve(int rootColumn,
                int rootValue,
                int numberOfQueens,
@@ -28,7 +38,14 @@ public:
                std::vector<Chessboard> &solutions,
                int &count);
 
-    void reconstructSparseToDense(int i,
+    /*! A method to use symmetry to obtain all solutions from a set of partial solutions.
+     *
+     * @param index The index of which to apply symmetry to obtain another valid NQueen solutions.
+     * @param numberOfQueens The total number of queens to place.
+     * @param mat A chessboard object containing a complete, valid solution.
+     * @param count The current number of solutions found.
+     */
+    void reconstructSparseToDense(int index,
                                   int numberOfQueens,
                                   std::vector<Chessboard> &mat,
                                   int &count);

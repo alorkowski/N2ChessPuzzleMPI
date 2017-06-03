@@ -44,33 +44,21 @@ public:
 	 */
     virtual ~Handler();
 
-    /*! A method to solve for all possible solutions specific to processor Rank 0.
+    /*! A method to solve for all possible solutions.
      */
-    void masterSolveAllSolutions();
+    void solveAllSolutions();
 
-    /*! A method to solve for possible solutions using symmetry specific to processor Rank 0.
+    /*! A method to solve for a partial set of the possible solutions using symmetry.
      */
-    void masterSolveAllSolutionsSparse();
-
-    /*! A method to solve for all possible solutions specific to any processor not Rank 0.
-     */
-    void workerSolveAllSolutions();
-
-    /*! A method to solve for some of the possible solutions specific to any processor not Rank 0.
-     */
-    void workerSolveAllSolutionsSparse();
+    void solveAllSolutionsSparse();
 
     /*! A method to find all solutions from a set of partial solutions.
     */
     void reconstructSparseToDense();
 
-    /*! A method to solve for all unique solutions specific to processor Rank 0.
+    /*! A method to solve for all unique solutions.
      */
-    void masterSolveUniqueSolutions();
-
-    /*! A method to solve for all unique solutions specific to any processor not Rank 0.
-     */
-    void workerSolveUniqueSolutions();
+    void solveUniqueSolutions();
 
     /*! A method to print all solutions.
      */

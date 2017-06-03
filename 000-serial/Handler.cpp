@@ -151,8 +151,8 @@ void Handler::writeUniqueSolutions() {
     std::ofstream outputFile;
     outputFile.open("array-NQueen-" + std::to_string(numberOfQueens) + "-" + ss.str() + ".dat");
     std::cout << "Printing solutions as arrays" << std::endl;
-    for (int i = 0; i < numberOfSolutions; i++) {
-        allSolutions.at(i).write(outputFile);
+    for (int i = 0; i < numberOfUniqueSolutions; i++) {
+        uniqueSolutions.at(i).write(outputFile);
     }
     outputFile.close();
 }
@@ -172,9 +172,9 @@ void Handler::writeUniqueGameBoards() {
 
     std::ofstream outputFile;
     outputFile.open("gb-NQueen-" + std::to_string(numberOfQueens) + "-" + ss.str() + ".dat");
-    for (int i = 0; i < numberOfSolutions; i++) {
+    for (int i = 0; i < numberOfUniqueSolutions; i++) {
         outputFile << std::endl << "No. " << (i + 1) << std::endl << "**************" << std::endl;
-        allSolutions.at(i).writeGameBoard(outputFile);
+        uniqueSolutions.at(i).writeGameBoard(outputFile);
     }
     outputFile.close();
 }

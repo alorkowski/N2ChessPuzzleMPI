@@ -5,10 +5,11 @@ CXXOMPFLAGS += -std=c++11 -Wall -O2 -fopenmp
 
 SERIAL_SRC = 000-serial/*.cpp
 MPI_SRC = 001-mpi/*.cpp
-MPMPI_SRC = 002-mpmpi/*.cpp
-FAST_MPI_SRC = 003-fastmpi/*.cpp
+OMPMPI_SRC = 002-ompmpi/*.cpp
+MPI2_SRC = 003-mpi2/*.cpp
+OMPMPI2_SRC = 004-ompmpi2/*.cpp
 
-all: serial mpi mpmpi fastmpi
+all: serial mpi ompmpi mpi2 ompmpi2
 
 serial:
 	mkdir -p build
@@ -18,13 +19,17 @@ mpi:
 	mkdir -p build
 	$(CXXMPI) $(CXXFLAGS) -o build/nqueen-mpi $(MPI_SRC)
 
-mpmpi:
+ompmpi:
 	mkdir -p build
-	$(CXXMPI) $(CXXOMPFLAGS) -o build/nqueen-mpmpi $(MPMPI_SRC)
+	$(CXXMPI) $(CXXOMPFLAGS) -o build/nqueen-ompmpi $(OMPMPI_SRC)
 
-fastmpi:
+mpi2:
 	mkdir -p build
-	$(CXXMPI) $(CXXFLAGS) -o build/nqueen-fastmpi $(FAST_MPI_SRC)
+	$(CXXMPI) $(CXXFLAGS) -o build/nqueen-mpi2 $(MPI2_SRC)
+
+ompmpi2:
+	mkdir -p build
+	$(CXXMPI) $(CXXOMPFLAGS) -o build/nqueen-ompmpi2 $(OMPMPI2_SRC)
 
 clean:
 	rm -rf build

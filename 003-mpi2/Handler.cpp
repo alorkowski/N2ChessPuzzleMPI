@@ -48,194 +48,126 @@ bool Handler::subCheck(int i, int j) {
 }
 
 
-void Handler::masterSolveAllSolutions() {
-    taskDetails.task = WORK_COUNT;
-    if (numberOfProcessors > numberOfQueens) {
-        for (int i = 0; i < numberOfQueens; i++) {
+void Handler::solveAllSolutions() {
+    std::vector<Chessboard> initialState;
+    std::vector<int> rootColumnVector;
+    std::vector<int> lastPlacementVector;
+
+    int numberOfRow1Queens = numberOfQueens;
+
+    if (numberOfProcessors + 1 > numberOfQueens) {
+        for (int i = 0; i < numberOfRow1Queens; i++) {
             for (int j = 0; j < numberOfQueens; j++) {
                 if (!subCheck(i, j)) {
-
-                    MPI_Recv(&msg, 1, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
-                    workerid = status.MPI_SOURCE;
-
-                    taskDetails.rowPlacement = j;
-                    taskDetails.columnPlacement = i;
-                    MPI_Send(&taskDetails, 1, mpiTaskDetails, workerid, 0, MPI_COMM_WORLD);
-                } else {
-                    continue;
-                }
-            }
-        }
-    } else {
-        for (int i = 0; i < numberOfQueens; i++) {
-            MPI_Recv(&msg, 1, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
-            workerid = status.MPI_SOURCE;
-
-            taskDetails.columnPlacement = i;
-            taskDetails.rowPlacement = i;
-            MPI_Send(&taskDetails, 1, mpiTaskDetails, workerid, 0, MPI_COMM_WORLD);
-        }
-    }
-
-    for (int i = 1; i <= numberOfProcessors; i++) {
-        taskDetails.task = WORK_STANDBY;
-        MPI_Recv(&msg, 1, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
-        workerid = status.MPI_SOURCE;
-        MPI_Send(&taskDetails, 1, mpiTaskDetails, workerid, 0, MPI_COMM_WORLD);
-    }
-}
-
-
-void Handler::masterSolveAllSolutionsSparse() {
-    taskDetails.task = WORK_COUNT;
-    if (numberOfProcessors > numberOfQueens) {
-        for (int i = 0; i < ceil((double) numberOfQueens/2); i++) {
-            for (int j = 0; j < numberOfQueens; j++) {
-                if (!subCheck(i, j)) {
-
                     if (i == floor(numberOfQueens/2)) {
                         if (numberOfQueens % 2 != 0) {
-                            if (j >= ceil((double) numberOfQueens / 2)) {
+                            if (j >= ceil(numberOfQueens / 2)) {
                                 continue;
                             }
                         }
                     }
-
-                    MPI_Recv(&msg, 1, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
-                    workerid = status.MPI_SOURCE;
-
-                    taskDetails.rowPlacement = j;
-                    taskDetails.columnPlacement = i;
-                    MPI_Send(&taskDetails, 1, mpiTaskDetails, workerid, 0, MPI_COMM_WORLD);
-                } else {
-                    continue;
+                    Chessboard chessboard(numberOfQueens);
+                    chessboard.setState(0, i);
+                    chessboard.setState(1, j);
+                    initialState.push_back(chessboard);
+                    rootColumnVector.push_back(2);
+                    lastPlacementVector.push_back(j);
                 }
             }
         }
     } else {
-        for (int i = 0; i < ceil((double) numberOfQueens/2); i++) {
-            MPI_Recv(&msg, 1, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
-            workerid = status.MPI_SOURCE;
-
-            taskDetails.columnPlacement = i;
-            taskDetails.rowPlacement = i;
-            MPI_Send(&taskDetails, 1, mpiTaskDetails, workerid, 0, MPI_COMM_WORLD);
+        for (int i = 0; i < numberOfRow1Queens; i++) {
+            Chessboard chessboard(numberOfQueens);
+            chessboard.setState(0, i);
+            initialState.push_back(chessboard);
+            rootColumnVector.push_back(1);
+            lastPlacementVector.push_back(i);
         }
     }
 
-    for (int i = 1; i <= numberOfProcessors; i++) {
-        taskDetails.task = WORK_STANDBY;
-        MPI_Recv(&msg, 1, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
-        workerid = status.MPI_SOURCE;
-        MPI_Send(&taskDetails, 1, mpiTaskDetails, workerid, 0, MPI_COMM_WORLD);
-    }
-}
+    int numberOfInitialStates = initialState.size();
 
-
-void Handler::workerSolveAllSolutions() {
-    Chessboard chessboard(numberOfQueens);
-
-    while (1) {
-        MPI_Send(&WORK_REQUEST, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
-        MPI_Recv(&taskDetails, 1, mpiTaskDetails, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
-        task = taskDetails.task;
-
-        if (task == WORK_STANDBY) { break; }
-
-        int rootColumn = 0;
-
-        if (taskDetails.columnPlacement != taskDetails.rowPlacement) {
-            chessboard.setState(0, taskDetails.columnPlacement);
-            chessboard.setState(1, taskDetails.rowPlacement);
-            rootColumn += 2;
-        } else {
-            chessboard.setState(0, taskDetails.columnPlacement);
-            rootColumn += 1;
-        }
+    for (int i = rankOfProcessor; i < numberOfInitialStates; i += numberOfProcessors + 1) {
+        int rootColumn = rootColumnVector.at(i);
+        int rowPlacement = lastPlacementVector.at(i);
 
         solver.solve(rootColumn - 1,
-                     taskDetails.rowPlacement,
+                     rowPlacement,
                      numberOfQueens,
                      rootColumn,
-                     chessboard,
+                     initialState.at(i),
                      allSolutions,
                      numberOfSolutions);
     }
 }
 
 
-void Handler::workerSolveAllSolutionsSparse() {
-    Chessboard chessboard(numberOfQueens);
+void Handler::solveAllSolutionsSparse() {
+    std::vector<Chessboard> initialState;
+    std::vector<int> rootColumnVector;
+    std::vector<int> lastPlacementVector;
 
-    while (1) {
-        MPI_Send(&WORK_REQUEST, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
-        MPI_Recv(&taskDetails, 1, mpiTaskDetails, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    int numberOfRow1Queens = ceil((double) numberOfQueens/2);
 
-        task = taskDetails.task;
-
-        if (task == WORK_STANDBY) { break; }
-
-        int rootColumn = 0;
-
-        if (taskDetails.columnPlacement != taskDetails.rowPlacement) {
-            chessboard.setState(0, taskDetails.columnPlacement);
-            chessboard.setState(1, taskDetails.rowPlacement);
-            rootColumn += 2;
-        } else {
-            chessboard.setState(0, taskDetails.columnPlacement);
-            rootColumn += 1;
+    if (numberOfProcessors + 1 > numberOfQueens) {
+        for (int i = 0; i < numberOfRow1Queens; i++) {
+            for (int j = 0; j < numberOfQueens; j++) {
+                if (!subCheck(i, j)) {
+                    if (i == floor(numberOfQueens/2)) {
+                        if (numberOfQueens % 2 != 0) {
+                            if (j >= ceil(numberOfQueens / 2)) {
+                                continue;
+                            }
+                        }
+                    }
+                    Chessboard chessboard(numberOfQueens);
+                    chessboard.setState(0, i);
+                    chessboard.setState(1, j);
+                    initialState.push_back(chessboard);
+                    rootColumnVector.push_back(2);
+                    lastPlacementVector.push_back(j);
+                }
+            }
         }
+    } else {
+        for (int i = 0; i < numberOfRow1Queens; i++) {
+            Chessboard chessboard(numberOfQueens);
+            chessboard.setState(0, i);
+            initialState.push_back(chessboard);
+            rootColumnVector.push_back(1);
+            lastPlacementVector.push_back(i);
+        }
+    }
 
+    int numberOfInitialStates = initialState.size();
+
+    for (int i = rankOfProcessor; i < numberOfInitialStates; i += numberOfProcessors + 1) {
+        int rootColumn = rootColumnVector.at(i);
+        int rowPlacement = lastPlacementVector.at(i);
         sparseSolver.solve(rootColumn - 1,
-                           taskDetails.rowPlacement,
+                           rowPlacement,
                            numberOfQueens,
                            rootColumn,
-                           chessboard,
+                           initialState.at(i),
                            allSolutions,
                            numberOfSolutions);
     }
 }
 
 
-void Handler::masterSolveUniqueSolutions() {
-    taskDetails.task = WORK_COUNT;
-    for (int i = 0; i < numberOfSolutions; i++) {
-        MPI_Recv(&msg, 1, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &status);
-        workerid = status.MPI_SOURCE;
+void Handler::solveUniqueSolutions() {
+    int currentIndex = rankOfProcessor;
+    while ( currentIndex < numberOfSolutions ) {
 
-        taskDetails.rowPlacement = i;
-        taskDetails.columnPlacement = i;
-        MPI_Send(&taskDetails, 1, mpiTaskDetails, workerid, 0, MPI_COMM_WORLD);
-    }
-
-    for (int i = 1; i <= numberOfProcessors; i++) {
-        taskDetails.task = WORK_STANDBY;
-        workerid = i;
-        MPI_Recv(&msg, 1, MPI_INT, workerid, 0, MPI_COMM_WORLD, &status);
-        MPI_Send(&taskDetails, 1, mpiTaskDetails, workerid, 0, MPI_COMM_WORLD);
-    }
-}
-
-
-void Handler::workerSolveUniqueSolutions() {
-    while (1) {
-        MPI_Send(&WORK_REQUEST, 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
-        MPI_Recv(&taskDetails, 1, mpiTaskDetails, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
-        task = taskDetails.task;
-
-        if (task == WORK_STANDBY) { break; }
-
-        int columnIndex = taskDetails.columnPlacement;
-
-        solver.UniqGB(columnIndex,
+        solver.UniqGB(currentIndex,
                       numberOfQueens,
                       allSolutions,
                       uniqueSolutions,
                       numberOfUniqueSolutions);
+
+        currentIndex += numberOfProcessors + 1;
     }
-};
+}
 
 
 void Handler::reconstructSparseToDense() {
