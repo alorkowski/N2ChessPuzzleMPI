@@ -30,6 +30,11 @@ public:
     int** allocate2DInt(int nRow,
                         int nColumn);
 
+
+    /*! A method to allocate a 2-dimensional, contiguous integer array.
+     */
+    int** allocate2DEmpty();
+
     /*! A method to deallocate a 1-dimensional, contiguous integer array.
      *
      * @param array The 1-dimensional, contiguous integer array to deallocate.

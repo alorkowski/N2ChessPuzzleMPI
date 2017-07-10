@@ -20,11 +20,18 @@ int* MemoryAllocationTool::allocate1DInt(int nRow) {
 int** MemoryAllocationTool::allocate2DInt(int nRow,
                                           int nColumn) {
     int* data = new int[nRow*nColumn];
-    int** array = new int*[nRow];
+    int** array = new int *[nRow];
     for (int i = 0; i < nRow; ++i, data += nColumn) {
         array[i] = data;
     }
+    return array;
+}
 
+
+int** MemoryAllocationTool::allocate2DEmpty() {
+    int* data = new int[1];
+    int** array = new int *[1];
+    array[0] = data;
     return array;
 }
 

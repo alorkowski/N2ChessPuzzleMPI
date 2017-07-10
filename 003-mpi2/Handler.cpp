@@ -181,9 +181,13 @@ void Handler::reconstructSparseToDense() {
 
 void Handler::convertAllSolutionVectorToArray() {
 
-    allSolutionsArray = memoryAllocationTool.allocate2DInt(numberOfSolutions, numberOfQueens);
-    if (numberOfSolutions == 0) { return; }
+    if (numberOfSolutions > 0) {
+        allSolutionsArray = memoryAllocationTool.allocate2DInt(numberOfSolutions, numberOfQueens);
+    } else {
+        allSolutionsArray = memoryAllocationTool.allocate2DEmpty();
+    }
     allSolutionAllocated = true;
+    if (numberOfSolutions == 0) { return; }
 
     for (int i = 0; i < numberOfSolutions; ++i) {
         for (int j = 0; j < numberOfQueens; ++j) {
@@ -195,9 +199,13 @@ void Handler::convertAllSolutionVectorToArray() {
 
 void Handler::convertUniqueSolutionVectorToArray() {
 
-    uniqueSolutionsArray = memoryAllocationTool.allocate2DInt(numberOfUniqueSolutions, numberOfQueens);
-    if (numberOfUniqueSolutions == 0) { return; }
+    if (numberOfUniqueSolutions > 0) {
+        uniqueSolutionsArray = memoryAllocationTool.allocate2DInt(numberOfUniqueSolutions, numberOfQueens);
+    } else {
+        uniqueSolutionsArray = memoryAllocationTool.allocate2DEmpty();
+    }
     uniqueSolutionAllocated = true;
+    if (numberOfUniqueSolutions == 0) { return; }
 
     for (int i = 0; i < numberOfUniqueSolutions; ++i) {
         for (int j = 0; j < numberOfQueens; ++j) {
